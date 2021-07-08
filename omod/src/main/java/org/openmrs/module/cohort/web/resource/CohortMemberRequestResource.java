@@ -53,7 +53,7 @@ public class CohortMemberRequestResource extends DataDelegatingCrudResource<Coho
 				description.addSelfLink();
 			} else if (rep instanceof FullRepresentation) {
 				description.addProperty("patient", Representation.FULL);
-				description.addProperty("cohort", Representation.DEFAULT);
+				description.addProperty("cohort", Representation.REF);
 				description.addProperty("role");
 				description.addProperty("startDate");
 				description.addProperty("endDate");
