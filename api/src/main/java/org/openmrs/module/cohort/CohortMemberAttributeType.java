@@ -19,5 +19,15 @@ public class CohortMemberAttributeType extends BaseAttributeType<CohortMember> {
 
     @Getter
     @Setter
-    private Integer id;
+    private Integer cohortMemberAttributeTypeId;
+
+    @Override
+    public Integer getId() {
+        return cohortMemberAttributeTypeId;
+    }
+
+    @Override
+    public void setId(Integer id) {
+        this.cohortMemberAttributeTypeId = id;
+    }
 }

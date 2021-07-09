@@ -545,7 +545,7 @@
             </not>
         </preConditions>
         <createTable tableName="cohort_member_attribute_type">
-            <column name="attribute_type_id" autoIncrement="true" type="int(11)">
+            <column name="cohort_member_attribute_type_id" autoIncrement="true" type="int(11)">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="name" type="varchar(255)">
