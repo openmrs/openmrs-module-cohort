@@ -661,4 +661,23 @@
             <column name="cohort_type_id"/>
         </createIndex>
     </changeSet>
+    <changeSet id="add_cohort_member_visit_columns_20210705" author="jecihjoy">
+        <preConditions onFail="MARK_RAN">
+                <tableExists tableName="cohort_member_visit" />
+        </preConditions>
+        <addColumn tableName="cohort_member_visit">
+            <column name="changed_by" type="int(11)">
+                <constraints foreignKeyName="cohort_member_visit_changed_by_fk" references="users(user_id)"/>
+            </column>
+            <column name="date_changed" type="datetime"/>
+            <column name="voided" type="tinyint(1)" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int(11)">
+                <constraints foreignKeyName="cohort_member_visit_voided_by_fk" references="users(user_id)"/>
+            </column>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
