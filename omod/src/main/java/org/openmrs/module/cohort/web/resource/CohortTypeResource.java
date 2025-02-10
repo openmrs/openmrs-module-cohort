@@ -11,9 +11,8 @@ package org.openmrs.module.cohort.web.resource;
 
 import java.util.List;
 
-import io.swagger.models.Model;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortType;
 import org.openmrs.module.cohort.api.CohortTypeService;
@@ -76,31 +75,27 @@ public class CohortTypeResource extends DataDelegatingCrudResource<CohortType> {
 	}
 	
 	@Override
-	public Model getGETModel(Representation rep) {
-		ModelImpl model = (ModelImpl) super.getGETModel(rep);
+	public Schema<?> getGETSchema(Representation rep) {
+		Schema<?> model = super.getGETSchema(rep);
 		if (rep instanceof DefaultRepresentation) {
-			model.property("name", new StringProperty());
-			model.property("description", new StringProperty());
-			model.property("uuid", new StringProperty());
-			model.property("display", new StringProperty());
+			model.addProperty("name", new StringSchema()).addProperty("description", new StringSchema())
+			        .addProperty("uuid", new StringSchema()).addProperty("display", new StringSchema());
 		} else if (rep instanceof FullRepresentation) {
-			model.property("name", new StringProperty());
-			model.property("description", new StringProperty());
-			model.property("uuid", new StringProperty());
-			model.property("display", new StringProperty());
-			model.property("auditInfo", new StringProperty());
+			model.addProperty("name", new StringSchema()).addProperty("description", new StringSchema())
+			        .addProperty("uuid", new StringSchema()).addProperty("display", new StringSchema())
+			        .addProperty("auditInfo", new StringSchema());
 		}
 		return model;
 	}
 	
 	@Override
-	public Model getCREATEModel(Representation rep) {
-		return new ModelImpl().property("name", new StringProperty()).property("description", new StringProperty());
+	public Schema<?> getCREATESchema(Representation rep) {
+		return new Schema<>().addProperty("name", new StringSchema()).addProperty("description", new StringSchema());
 	}
 	
 	@Override
-	public Model getUPDATEModel(Representation rep) {
-		return getCREATEModel(rep);
+	public Schema<?> getUPDATESchema(Representation rep) {
+		return getCREATESchema(rep);
 	}
 	
 	@Override
