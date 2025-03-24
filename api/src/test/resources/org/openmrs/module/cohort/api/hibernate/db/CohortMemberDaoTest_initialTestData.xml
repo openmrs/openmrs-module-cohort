@@ -27,5 +27,5 @@
     <cohort_type cohort_type_id="1" name="Test cohortType" description="" creator="1"
                  date_created="2005-01-01 00:00:00.0" voided="false" uuid="94517bf9-d8d7-4726-b4f1-a2dff6b36e2d"/>
     <cohort_member cohort_member_id="1" patient_id="2" cohort_id="12" creator="1"
-                   date_created="2021-06-07 00:00:00.0" voided="false" uuid="23517bf9-d8d7-4726-b4f1-a2dff6b36w32"/>
+                   date_created="2021-06-07 00:00:00.0" voided="false" uuid="23517bf9-d8d7-4726-b4f1-a2dff6b36w32" start_date="2021-06-07 00:00:00.0"/>
 </dataset>

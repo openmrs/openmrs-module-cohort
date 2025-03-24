@@ -46,7 +46,7 @@
 
     <properties>
         <main.basedir>${project.basedir}</main.basedir>
-        <openMRSVersion>2.0.6</openMRSVersion>
+        <openMRSVersion>2.7.3</openMRSVersion>
         <webservicesRestVersion>2.21.0</webservicesRestVersion>
         <legacyUiVersion>1.2</legacyUiVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

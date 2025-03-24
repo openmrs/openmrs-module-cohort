@@ -24,6 +24,7 @@ public class CohortValidatorTest extends BaseModuleContextSensitiveTest {
 		CohortM cohort = new CohortM();
 		cohort.setCohortType(new CohortType());
 		cohort.setName("Test Cohort");
+		cohort.setDescription("Test Cohort Description");
 		Context.getService(CohortService.class).saveCohortM(cohort);
 		
 		CohortM invalidCohort = new CohortM();
@@ -40,6 +41,7 @@ public class CohortValidatorTest extends BaseModuleContextSensitiveTest {
 		CohortM cohort = new CohortM();
 		cohort.setName("Test Cohort");
 		cohort.setCohortType(new CohortType());
+		cohort.setDescription("Test Cohort");
 		Context.getService(CohortService.class).saveCohortM(cohort);
 		cohort.setDescription("Updated Cohort description");
 		Errors errors = new BeanPropertyBindingResult(cohort, "invalid cohort");

@@ -4,7 +4,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
-import org.hibernate.SessionFactory;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Test;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
@@ -26,6 +29,7 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
+		cohortM.setDescription("Test Cohort Description");
 		
 		CohortM result = Context.getService(CohortService.class).saveCohortM(cohortM);
 		
@@ -38,6 +42,7 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
+		cohortM.setDescription("Test Cohort Description");
 		
 		CohortM savedCohort = Context.getService(CohortService.class).saveCohortM(cohortM);
 		savedCohort.setName("Updated Test Cohort");
@@ -49,14 +54,17 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 	}
 	
 	@Test
-	public void saveCohortM_shouldSaveCohortMembers() {
+	public void saveCohortM_shouldSaveCohortMembers() throws ParseException {
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
+		cohortM.setDescription("Test Cohort Description");
 		
 		Patient patient = Context.getPatientService().getPatient(7);
 		CohortMember cm = new CohortMember(patient);
-		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+		Date date = sdf.parse("2021-06-07 00:00:00.0");
+		cm.setStartDate(date);
 		cohortM.addMemberships(cm);
 		
 		CohortM result = Context.getService(CohortService.class).saveCohortM(cohortM);
@@ -68,19 +76,22 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 	}
 	
 	@Test
-	public void saveCohortM_shouldSaveCohortMembersForExistingCohort() {
+	public void saveCohortM_shouldSaveCohortMembersForExistingCohort() throws ParseException {
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
+		cohortM.setDescription("Test Cohort Description");
 		
 		CohortM savedCohort = Context.getService(CohortService.class).saveCohortM(cohortM);
 		
 		Patient patient = Context.getPatientService().getPatient(7);
 		CohortMember cm = new CohortMember(patient);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+		Date date = sdf.parse("2021-06-07 00:00:00.0");
+		cm.setStartDate(date);
 		savedCohort.addMemberships(cm);
 		
 		Context.getService(CohortService.class).saveCohortM(savedCohort);
-		Context.getRegisteredComponent("sessionFactory", SessionFactory.class).getCurrentSession().flush();
 		
 		CohortM result = Context.getService(CohortService.class).getCohortM(savedCohort.getCohortId());
 		
@@ -91,13 +102,17 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 	}
 	
 	@Test
-	public void saveCohortM_shouldRemoveMembersForExistingCohort() {
+	public void saveCohortM_shouldRemoveMembersForExistingCohort() throws ParseException {
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
+		cohortM.setDescription("Test Cohort Description");
 		
 		Patient patient = Context.getPatientService().getPatient(7);
 		CohortMember cm = new CohortMember(patient);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+		Date date = sdf.parse("2021-06-07 00:00:00.0");
+		cm.setStartDate(date);
 		
 		cohortM.addMemberships(cm);
 		
