@@ -53,7 +53,8 @@ public class CohortResourceControllerTest extends BaseWebControllerTest {
 		CohortM cohort = Context.getService(CohortService.class).getCohortM("cohort name");
 		assertNull(cohort);
 		
-		String createJson = "{ \"name\":\"cohort name\", \"description\":\"cohort description\"," + "\"startDate\":\"2023-08-22T01:00:00.000+0000\"" + "\"cohortMembers\": [ {"
+		String createJson = "{ \"name\":\"cohort name\", \"description\":\"cohort description\","
+		        + "\"startDate\":\"2023-08-22T01:00:00.000+0000\"" + "\"cohortMembers\": [ {"
 		        + "\"patient\":\"da7f524f-27ce-4bb2-86d6-6d1d05312bd5\"" + " } ]" + "}";
 		
 		handle(newPostRequest(getURI(), createJson));

@@ -25,7 +25,7 @@ import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
 import org.springframework.context.annotation.Description;
 
-public class CohortMemberResourceControllerTest extends MainResourceControllerTest {
+public class CohortMemberResourceControllerTest extends BaseWebControllerTest {
 	
 	private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 	
@@ -33,17 +33,14 @@ public class CohortMemberResourceControllerTest extends MainResourceControllerTe
 	
 	private Patient patient;
 	
-	@Override
 	public String getURI() {
 		return "/rest/v1/cohortm/cohortmember";
 	}
 	
-	@Override
 	public String getUuid() {
 		return null;
 	}
 	
-	@Override
 	public long getAllCount() {
 		return 0;
 	}
@@ -185,23 +182,4 @@ public class CohortMemberResourceControllerTest extends MainResourceControllerTe
 		return cohortMember;
 	}
 	
-	@Override
-	public void shouldGetDefaultByUuid() {
-		
-	}
-	
-	@Override
-	public void shouldGetFullByUuid() {
-		
-	}
-	
-	@Override
-	public void shouldGetRefByUuid() {
-		
-	}
-	
-	@Override
-	public void shouldGetAll() {
-		
-	}
 }
