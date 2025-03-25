@@ -16,7 +16,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.hibernate.exception.ConstraintViolationException;
+import javax.persistence.PersistenceException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.openmrs.api.context.Context;
@@ -91,7 +92,7 @@ public class CohortTypeGenericDaoTest extends BaseModuleContextSensitiveTest {
 		assertNull(afterAttemptPurge);
 	}
 	
-	@Test(expected = ConstraintViolationException.class)
+	@Test(expected = PersistenceException.class)
 	public void shouldThrowExceptionForPurgeCohortType() {
 		CohortType cohortType = dao.get("94517bf9-d9d6-4726-b4f1-a2dff6b36e2d");
 		assertNotNull(cohortType);
