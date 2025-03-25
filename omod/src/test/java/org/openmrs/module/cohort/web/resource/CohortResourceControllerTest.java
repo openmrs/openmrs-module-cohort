@@ -11,21 +11,17 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.webservices.rest.web.v1_0.controller.MainResourceControllerTest;
 
-public class CohortResourceControllerTest extends MainResourceControllerTest {
+public class CohortResourceControllerTest extends BaseWebControllerTest {
 	
-	@Override
 	public long getAllCount() {
 		return 0;
 	}
 	
-	@Override
 	public String getURI() {
-		return "cohortm/cohort";
+		return "/rest/v1/cohortm/cohort";
 	}
 	
-	@Override
 	public String getUuid() {
 		return null;
 	}
@@ -36,8 +32,8 @@ public class CohortResourceControllerTest extends MainResourceControllerTest {
 		CohortM cohort = Context.getService(CohortService.class).getCohortM("cohort name");
 		assertNull(cohort);
 		
-		String json = "{ \"name\":\"cohort name\", \"description\":\"cohort description\"," + "\"cohortMembers\": [ {"
-		        + "\"patient\":\"da7f524f-27ce-4bb2-86d6-6d1d05312bd5\"" + " } ]" + "}";
+		String json = "{ \"name\":\"cohort name\", \"description\":\"cohort description\"," + "\"startDate\":\"2023-08-22T01:00:00.000+0000\","
+		        + "\"cohortMembers\": [ {" + "\"patient\":\"da7f524f-27ce-4bb2-86d6-6d1d05312bd5\"" + " } ]" + "}";
 		
 		handle(newPostRequest(getURI(), json));
 		
@@ -71,18 +67,4 @@ public class CohortResourceControllerTest extends MainResourceControllerTest {
 		assertEquals("updated cohort description", cohort.getDescription());
 	}
 	
-	@Override
-	public void shouldGetDefaultByUuid() throws Exception {
-		
-	}
-	
-	@Override
-	public void shouldGetFullByUuid() throws Exception {
-		
-	}
-	
-	@Override
-	public void shouldGetRefByUuid() throws Exception {
-		
-	}
 }

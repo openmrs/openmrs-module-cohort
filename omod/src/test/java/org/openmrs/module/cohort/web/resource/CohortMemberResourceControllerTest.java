@@ -23,7 +23,6 @@ import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.webservices.rest.web.v1_0.controller.MainResourceControllerTest;
 import org.springframework.context.annotation.Description;
 
 public class CohortMemberResourceControllerTest extends MainResourceControllerTest {
@@ -36,7 +35,7 @@ public class CohortMemberResourceControllerTest extends MainResourceControllerTe
 	
 	@Override
 	public String getURI() {
-		return "cohortm/cohortmember";
+		return "/rest/v1/cohortm/cohortmember";
 	}
 	
 	@Override

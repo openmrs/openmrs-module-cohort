@@ -47,8 +47,8 @@
     <properties>
         <main.basedir>${project.basedir}</main.basedir>
         <openMRSVersion>2.7.3</openMRSVersion>
-        <webservicesRestVersion>2.21.0</webservicesRestVersion>
-        <legacyUiVersion>1.2</legacyUiVersion>
+        <webservicesRestVersion>2.48.0</webservicesRestVersion>
+        <legacyUiVersion>1.22.0</legacyUiVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
