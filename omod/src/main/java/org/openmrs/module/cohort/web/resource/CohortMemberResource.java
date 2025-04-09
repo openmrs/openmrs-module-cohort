@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-import io.swagger.models.Model;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.properties.BooleanProperty;
-import io.swagger.models.properties.DateProperty;
-import io.swagger.models.properties.RefProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.BooleanSchema;
+import io.swagger.v3.oas.models.media.DateSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.media.UUIDSchema;
+import org.openmrs.Cohort;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.api.context.Context;
@@ -103,39 +103,36 @@ public class CohortMemberResource extends DataDelegatingCrudResource<CohortMembe
 	}
 	
 	@Override
-	public Model getCREATEModel(Representation rep) {
-		return new ModelImpl().property("cohort", new RefProperty("#/definitions/CohortCreate"))
-		        .property("endDate", new DateProperty()).property("patient", new RefProperty("#/definitions/PatientCreate"))
-		        .property("startDate", new DateProperty()).property("voided", new BooleanProperty())
-		        .property("attributes", new RefProperty("#/definitions/CohortmCohortmemberAttributeCreate"));
+	public Schema<?> getCREATESchema(Representation rep) {
+		return new Schema<>().addProperty("cohort", new Schema<Cohort>().$ref("#/components/schemas/CohortCreate"))
+		        .addProperty("endDate", new DateSchema())
+		        .addProperty("patient", new Schema<Patient>().$ref("#/components/schemas/PatientCreate"))
+		        .addProperty("startDate", new DateSchema()).addProperty("voided", new BooleanSchema())
+		        .addProperty("attributes", new Schema<>().$ref("#/components/schemas/CohortmCohortmemberAttributeCreate"));
 	}
 	
 	@Override
-	public Model getGETModel(Representation rep) {
-		ModelImpl model = (ModelImpl) super.getGETModel(rep);
+	public Schema<?> getGETSchema(Representation rep) {
+		Schema<?> model = super.getGETSchema(rep);
 		if (rep instanceof DefaultRepresentation) {
-			model.property("patient", new RefProperty("#/definitions/PatientGetRef"));
-			model.property("startDate", new DateProperty());
-			model.property("endDate", new DateProperty());
-			model.property("uuid", new StringProperty());
-			model.property("voided", new BooleanProperty());
+			model.addProperty("patient", new Schema<Patient>().$ref("#/components/schemas/PatientGetRef"))
+			        .addProperty("startDate", new DateSchema()).addProperty("endDate", new DateSchema())
+			        .addProperty("uuid", new StringSchema()).addProperty("voided", new BooleanSchema());
 		} else if (rep instanceof FullRepresentation) {
-			model.property("display", new StringProperty());
-			model.property("startDate", new DateProperty());
-			model.property("endDate", new DateProperty());
-			model.property("uuid", new StringProperty());
-			model.property("voided", new BooleanProperty());
-			model.property("patient", new RefProperty("#/definitions/PatientGetFull"));
-			model.property("auditInfo", new StringProperty());
+			model.addProperty("display", new StringSchema()).addProperty("startDate", new DateSchema())
+			        .addProperty("endDate", new DateSchema()).addProperty("uuid", new UUIDSchema())
+			        .addProperty("voided", new BooleanSchema())
+			        .addProperty("patient", new Schema<Patient>().$ref("#/components/schemas/PatientGetFull"))
+			        .addProperty("auditInfo", new StringSchema());
 		}
 		return model;
 	}
 	
 	@Override
-	public Model getUPDATEModel(Representation rep) {
-		ModelImpl model = (ModelImpl) super.getUPDATEModel(rep);
-		return model.property("endDate", new DateProperty()).property("startDate", new DateProperty()).property("voided",
-		    new BooleanProperty());
+	public Schema<?> getUPDATESchema(Representation rep) {
+		Schema<?> model = super.getUPDATESchema(rep);
+		return model.addProperty("endDate", new DateSchema()).addProperty("startDate", new DateSchema())
+		        .addProperty("voided", new BooleanSchema());
 	}
 	
 	@Override

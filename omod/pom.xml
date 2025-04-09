@@ -15,64 +15,58 @@
     </description>
 
     <dependencies>
-        <!--
-        Add other dependencies from parent's pom:
-        <dependency>
-            <groupId>org.other.library</groupId>
-            <artifactId>library-name</artifactId>
-        </dependency>
-        -->
-
         <!-- Begin OpenMRS modules -->
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>${project.parent.artifactId}-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>webservices.rest-omod</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>webservices.rest-omod-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.openmrs.module</groupId>
-            <artifactId>webservices.rest-omod-common</artifactId>
-            <classifier>tests</classifier>
-        </dependency>
+
         <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>legacyui-omod</artifactId>
         </dependency>
         <!-- End OpenMRS modules -->
+        <!-- Begin Rest Web Services -->
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod-1.8</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod-2.0</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
 
-        <!-- Begin OpenMRS core -->
         <dependency>
-            <groupId>org.openmrs.web</groupId>
-            <artifactId>openmrs-web</artifactId>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod-2.0</artifactId>
+            <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.openmrs.api</groupId>
-            <artifactId>openmrs-api</artifactId>
-            <type>test-jar</type>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod-1.8</artifactId>
+            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.openmrs.web</groupId>
-            <artifactId>openmrs-web</artifactId>
-            <type>test-jar</type>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod-common</artifactId>
+            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.openmrs.test</groupId>
-            <artifactId>openmrs-test</artifactId>
-            <type>pom</type>
-            <scope>test</scope>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod-common</artifactId>
+            <scope>provided</scope>
         </dependency>
-        <!-- End OpenMRS core -->
+        <!-- End Rest Web Services -->
 
         <dependency>
             <groupId>javax.servlet</groupId>
