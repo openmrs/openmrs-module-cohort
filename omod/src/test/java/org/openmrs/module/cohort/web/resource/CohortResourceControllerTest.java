@@ -6,12 +6,12 @@ import static org.junit.Assert.assertNull;
 
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.webservices.rest.web.v1_0.controller.MainResourceControllerTest;
+import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
 
 public class CohortResourceControllerTest extends MainResourceControllerTest {
 	
@@ -37,7 +37,8 @@ public class CohortResourceControllerTest extends MainResourceControllerTest {
 		assertNull(cohort);
 		
 		String json = "{ \"name\":\"cohort name\", \"description\":\"cohort description\"," + "\"cohortMembers\": [ {"
-		        + "\"patient\":\"da7f524f-27ce-4bb2-86d6-6d1d05312bd5\"" + " } ]" + "}";
+		        + "\"patient\":\"da7f524f-27ce-4bb2-86d6-6d1d05312bd5\","
+		        + "\"startDate\": \"2025-09-04T00:00:00.000+0000\" " + " } ]" + "}";
 		
 		handle(newPostRequest(getURI(), json));
 		
@@ -57,7 +58,8 @@ public class CohortResourceControllerTest extends MainResourceControllerTest {
 		assertNull(cohort);
 		
 		String createJson = "{ \"name\":\"cohort name\", \"description\":\"cohort description\"," + "\"cohortMembers\": [ {"
-		        + "\"patient\":\"da7f524f-27ce-4bb2-86d6-6d1d05312bd5\"" + " } ]" + "}";
+		        + "\"patient\":\"da7f524f-27ce-4bb2-86d6-6d1d05312bd5\","
+		        + "\"startDate\": \"2025-09-04T00:00:00.000+0000\" " + " } ]" + "}";
 		
 		handle(newPostRequest(getURI(), createJson));
 		cohort = Context.getService(CohortService.class).getCohortM("cohort name");

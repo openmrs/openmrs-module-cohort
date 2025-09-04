@@ -4,14 +4,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.api.CohortService;
@@ -20,30 +19,25 @@ import org.openmrs.module.webservices.rest.web.representation.CustomRepresentati
 import org.openmrs.module.webservices.rest.web.representation.NamedRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.RefRepresentation;
 import org.openmrs.module.webservices.rest.web.resource.api.PageableResult;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-@RunWith(PowerMockRunner.class)
 public class CohortResourceTest extends BaseCohortResourceTest<CohortM, CohortResource> {
 	
 	private static final String COHORT_UUID = "737ed593-3769-4df4-9de0-0af149de35ff";
 	
 	private static final String COHORT_NAME = "Test cohort attribute type";
 	
-	@Mock
-	@Qualifier("cohort.cohortService")
 	private CohortService cohortService;
 	
 	CohortM cohort;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
+		cohortService = mock(CohortService.class);
 		cohort = new CohortM();
 		cohort.setUuid(COHORT_UUID);
 		cohort.setName(COHORT_NAME);
 		
 		//Mocks
-		this.prepareMocks();
 		when(Context.getService(CohortService.class)).thenReturn(cohortService);
 		
 		this.setResource(new CohortResource());

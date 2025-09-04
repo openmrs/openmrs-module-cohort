@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,10 +27,8 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
@@ -40,29 +39,23 @@ import org.openmrs.module.webservices.rest.web.representation.CustomRepresentati
 import org.openmrs.module.webservices.rest.web.representation.NamedRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.RefRepresentation;
 import org.openmrs.module.webservices.rest.web.response.ResourceDoesNotSupportOperationException;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Description;
 
-@RunWith(PowerMockRunner.class)
 public class CohortMemberResourceTest extends BaseCohortResourceTest<CohortMember, CohortMemberResource> {
 	
 	private static final String COHORT_MEMBER_UUID = "6hje567a-fca0-11e5-9e59-08002719a7";
 	
-	@Mock
-	@Qualifier("cohort.cohortMemberService")
 	private CohortMemberService cohortMemberService;
 	
 	CohortMember cohortMember;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
-		
 		cohortMember = new CohortMember();
 		cohortMember.setUuid(COHORT_MEMBER_UUID);
 		
 		//Mocks
-		this.prepareMocks();
+		cohortMemberService = mock(CohortMemberService.class);
 		when(Context.getService(CohortMemberService.class)).thenReturn(cohortMemberService);
 		
 		this.setResource(new CohortMemberResource());
@@ -231,11 +224,11 @@ public class CohortMemberResourceTest extends BaseCohortResourceTest<CohortMembe
 		assertEquals(updatedCohortMember.getEndDate(), newlyCreatedObject.getEndDate());
 	}
 	
-	@Test(expected = ResourceDoesNotSupportOperationException.class)
+	@Test
 	public void shouldGetAllResources() {
-		when(cohortMemberService.findAllCohortMembers()).thenReturn(Collections.singletonList(getObject()));
-		
-		getResource().getAll(new RequestContext());
+		assertThrows(ResourceDoesNotSupportOperationException.class, () -> {
+			getResource().getAll(new RequestContext());
+		});
 	}
 	
 	@Test

@@ -4,6 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
+import java.util.Date;
+
 import org.hibernate.SessionFactory;
 import org.junit.Test;
 import org.openmrs.Patient;
@@ -26,6 +28,7 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
+		cohortM.setDescription("Test Cohort Description");
 		
 		CohortM result = Context.getService(CohortService.class).saveCohortM(cohortM);
 		
@@ -38,7 +41,7 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
-		
+		cohortM.setDescription("Test Cohort Description");
 		CohortM savedCohort = Context.getService(CohortService.class).saveCohortM(cohortM);
 		savedCohort.setName("Updated Test Cohort");
 		
@@ -56,9 +59,9 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		
 		Patient patient = Context.getPatientService().getPatient(7);
 		CohortMember cm = new CohortMember(patient);
-		
+		cm.setStartDate(new Date(System.currentTimeMillis() - 1000));
 		cohortM.addMemberships(cm);
-		
+		cohortM.setDescription("Test Cohort Description");
 		CohortM result = Context.getService(CohortService.class).saveCohortM(cohortM);
 		
 		assertThat(result, notNullValue());
@@ -72,11 +75,12 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
-		
+		cohortM.setDescription("Test Cohort Description");
 		CohortM savedCohort = Context.getService(CohortService.class).saveCohortM(cohortM);
 		
 		Patient patient = Context.getPatientService().getPatient(7);
 		CohortMember cm = new CohortMember(patient);
+		cm.setStartDate(new Date(System.currentTimeMillis() - 1000));
 		savedCohort.addMemberships(cm);
 		
 		Context.getService(CohortService.class).saveCohortM(savedCohort);
@@ -95,9 +99,11 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		CohortM cohortM = new CohortM();
 		cohortM.setName("Test Cohort");
 		cohortM.setCohortType(new CohortType());
+		cohortM.setDescription("Test Cohort Description");
 		
 		Patient patient = Context.getPatientService().getPatient(7);
 		CohortMember cm = new CohortMember(patient);
+		cm.setStartDate(new Date(System.currentTimeMillis() - 1000));
 		
 		cohortM.addMemberships(cm);
 		

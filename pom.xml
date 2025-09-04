@@ -4,7 +4,7 @@
 
     <groupId>org.openmrs.module</groupId>
     <artifactId>cohort</artifactId>
-    <version>3.7.4-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Cohort Module</name>
     <description>Module to support Cohort-level encounters and observations and to create these encounters via a REST
@@ -46,14 +46,17 @@
 
     <properties>
         <main.basedir>${project.basedir}</main.basedir>
-        <openMRSVersion>2.0.6</openMRSVersion>
-        <webservicesRestVersion>2.21.0</webservicesRestVersion>
-        <legacyUiVersion>1.2</legacyUiVersion>
+        <openMRSVersion>2.7.4</openMRSVersion>
+        <webservicesRestVersion>3.0.0-SNAPSHOT</webservicesRestVersion>
+        <legacyUiVersion>2.0.0-SNAPSHOT</legacyUiVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <lombokVersion>1.18.16</lombokVersion>
+        <lombokVersion>1.18.38</lombokVersion>
         <openmrsPlatformToolsVersion>2.4.0</openmrsPlatformToolsVersion>
+        <javaxServletVersion>4.0.1</javaxServletVersion>
+        <mockitoInlineVersion>4.8.0</mockitoInlineVersion>
+        <byteBuddyVersion>1.17.7</byteBuddyVersion>
     </properties>
 
     <dependencyManagement>
@@ -72,6 +75,12 @@
                 <version>${openMRSVersion}</version>
                 <type>jar</type>
                 <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.openmrs.api</groupId>
@@ -128,6 +137,10 @@
                         <groupId>org.powermock</groupId>
                         <artifactId>powermock-api-mockito</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.powermock</groupId>
+                        <artifactId>powermock-api-mockito2</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -137,31 +150,32 @@
                 <classifier>tests</classifier>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.openmrs.module</groupId>
+                <artifactId>webservices.rest-omod</artifactId>
+                <version>${webservicesRestVersion}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
             <!-- End OpenMRS core -->
 
-            <!-- Test dependencies -->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javaxServletVersion}</version>
+                <scope>provided</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>3.10.0</version>
+                <artifactId>mockito-inline</artifactId>
+                <version>${mockitoInlineVersion}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-core</artifactId>
-                <version>2.2</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>2.0.9</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito2</artifactId>
-                <version>2.0.9</version>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byteBuddyVersion}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -174,22 +188,18 @@
             <version>${lombokVersion}</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <artifactId>mockito-inline</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
         </dependency>
     </dependencies>
 

@@ -12,40 +12,34 @@ package org.openmrs.module.cohort.web.resource;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortType;
 import org.openmrs.module.cohort.api.CohortTypeService;
 import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.resource.api.PageableResult;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-@RunWith(PowerMockRunner.class)
 public class CohortTypeResourceTest extends BaseCohortResourceTest<CohortType, CohortTypeResource> {
 	
 	private static final String COHORT_TYPE_UUID = "4hje098a-fca0-34e5-9e59-18552719a3";
 	
-	@Mock
-	@Qualifier
 	private CohortTypeService cohortTypeService;
 	
 	CohortType cohortType;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
 		cohortType = new CohortType();
 		cohortType.setUuid(COHORT_TYPE_UUID);
 		
 		//Mocks
-		this.prepareMocks();
+		cohortTypeService = mock(CohortTypeService.class);
 		when(Context.getService(CohortTypeService.class)).thenReturn(cohortTypeService);
 		
 		this.setResource(new CohortTypeResource());

@@ -13,12 +13,14 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mockStatic;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.MockedStatic;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.web.RestUtil;
@@ -26,10 +28,7 @@ import org.openmrs.module.webservices.rest.web.representation.DefaultRepresentat
 import org.openmrs.module.webservices.rest.web.representation.FullRepresentation;
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceHandler;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
-@PrepareForTest({ Context.class, RestUtil.class })
 public class BaseCohortResourceTest<K extends OpenmrsObject, T extends DelegatingResourceHandler<K>> {
 	
 	@Getter(AccessLevel.PACKAGE)
@@ -40,13 +39,26 @@ public class BaseCohortResourceTest<K extends OpenmrsObject, T extends Delegatin
 	@Setter(AccessLevel.PACKAGE)
 	private K object;
 	
-	@Before
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
+	private MockedStatic<RestUtil> restUtilMock;
+	
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
+	private MockedStatic<Context> contextMock;
+	
+	@BeforeEach
 	public void prepareMocks() {
-		PowerMockito.mockStatic(RestUtil.class);
-		
-		PowerMockito.mockStatic(Context.class);
+		restUtilMock = mockStatic(RestUtil.class);
+		contextMock = mockStatic(Context.class);
 		//By pass authentication
-		when(Context.isAuthenticated()).thenReturn(true);
+		contextMock.when(Context::isAuthenticated).thenReturn(true);
+	}
+	
+	@AfterEach
+	public void cleanup() {
+		restUtilMock.close();
+		contextMock.close();
 	}
 	
 	public void verifyDefaultRepresentation(String... properties) {

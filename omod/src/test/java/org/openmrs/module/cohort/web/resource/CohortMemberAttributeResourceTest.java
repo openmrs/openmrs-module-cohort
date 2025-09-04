@@ -13,40 +13,33 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortMemberAttribute;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.webservices.rest.web.representation.CustomRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.NamedRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.RefRepresentation;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-@RunWith(PowerMockRunner.class)
 public class CohortMemberAttributeResourceTest extends BaseCohortResourceTest<CohortMemberAttribute, CohortMemberAttributeResource> {
 	
 	private static final String COHORT_MEMBER_ATTRIBUTE_UUID = "4hje098a-fca0-34e5-9e59-18552719a3";
 	
-	@Mock
-	@Qualifier("cohort.cohortMemberService")
 	private CohortMemberService cohortMemberService;
 	
 	CohortMemberAttribute cohortMemberAttribute;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
-		
+		cohortMemberService = mock(CohortMemberService.class);
 		cohortMemberAttribute = new CohortMemberAttribute();
 		cohortMemberAttribute.setUuid(COHORT_MEMBER_ATTRIBUTE_UUID);
 		
 		//Mocks
-		this.prepareMocks();
 		when(Context.getService(CohortMemberService.class)).thenReturn(cohortMemberService);
 		
 		this.setResource(new CohortMemberAttributeResource());

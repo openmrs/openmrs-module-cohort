@@ -11,8 +11,8 @@ import java.util.Collection;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
@@ -23,7 +23,7 @@ import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.webservices.rest.web.v1_0.controller.MainResourceControllerTest;
+import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
 import org.springframework.context.annotation.Description;
 
 public class CohortMemberResourceControllerTest extends MainResourceControllerTest {
@@ -49,7 +49,7 @@ public class CohortMemberResourceControllerTest extends MainResourceControllerTe
 		return 0;
 	}
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		cohort = createMinimalCohort();

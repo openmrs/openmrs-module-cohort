@@ -13,14 +13,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortAttributeType;
 import org.openmrs.module.cohort.api.CohortService;
@@ -29,31 +28,26 @@ import org.openmrs.module.webservices.rest.web.representation.CustomRepresentati
 import org.openmrs.module.webservices.rest.web.representation.NamedRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.RefRepresentation;
 import org.openmrs.module.webservices.rest.web.resource.api.PageableResult;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-@RunWith(PowerMockRunner.class)
 public class CohortAttributeTypeResourceTest extends BaseCohortResourceTest<CohortAttributeType, CohortAttributeTypeResource> {
 	
 	private static final String COHORT_ATTRIBUTE_TYPE_UUID = "8tae735a-fca0-11e5-9e59-08002719a786";
 	
 	private static final String COHORT_ATTRIBUTE_TYPE_NAME = "Test cohort attribute type";
 	
-	@Mock
-	@Qualifier("cohort.cohortService")
 	private CohortService cohortService;
 	
 	CohortAttributeType cohortAttributeType;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
+		cohortService = mock(CohortService.class);
 		cohortAttributeType = new CohortAttributeType();
 		cohortAttributeType.setUuid(COHORT_ATTRIBUTE_TYPE_UUID);
 		cohortAttributeType.setName(COHORT_ATTRIBUTE_TYPE_NAME);
 		
 		//Mocks
-		this.prepareMocks();
-		when(Context.getService(CohortService.class)).thenReturn(cohortService);
+		getContextMock().when(() -> Context.getService(CohortService.class)).thenReturn(cohortService);
 		
 		this.setResource(new CohortAttributeTypeResource());
 		this.setObject(cohortAttributeType);
