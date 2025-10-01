@@ -18,6 +18,7 @@
 
     <context:annotation-config />
     <context:component-scan base-package="org.openmrs.module.cohort"/>
+    <context:component-scan base-package="org.openmrs.module.fhir2.api"/>
 
     <bean id="cohort.cohortService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="transactionManager" ref="transactionManager"/>

@@ -1,0 +1,125 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+ * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+ * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+ *
+ * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+ * graphic logo is a trademark of OpenMRS Inc.
+ */
+package org.openmrs.module.fhir2.providers;
+
+import javax.annotation.Nonnull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import ca.uhn.fhir.rest.annotation.Create;
+import ca.uhn.fhir.rest.annotation.Delete;
+import ca.uhn.fhir.rest.annotation.IdParam;
+import ca.uhn.fhir.rest.annotation.OptionalParam;
+import ca.uhn.fhir.rest.annotation.Read;
+import ca.uhn.fhir.rest.annotation.ResourceParam;
+import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.annotation.Update;
+import ca.uhn.fhir.rest.api.MethodOutcome;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.param.StringParam;
+import ca.uhn.fhir.rest.server.IResourceProvider;
+import ca.uhn.fhir.rest.server.SimpleBundleProvider;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import org.hl7.fhir.r4.model.Group;
+import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.OperationOutcome;
+import org.openmrs.module.cohort.CohortM;
+import org.openmrs.module.cohort.api.CohortService;
+import org.openmrs.module.fhir2.api.translators.GroupTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+
+/**
+ * FHIR resource provider for {@link Group} resources backed by {@link CohortM}.
+ */
+@Primary
+@Component("cohortGroupFhirResourceProvider")
+@Setter(AccessLevel.PACKAGE)
+@Getter(AccessLevel.PROTECTED)
+public class GroupFhirResourceProvider implements IResourceProvider {
+	
+	@Autowired
+	private CohortService cohortService;
+	
+	@Autowired
+	private GroupTranslator groupTranslator;
+	
+	@Override
+	public Class<Group> getResourceType() {
+		return Group.class;
+	}
+	
+	@Search
+	public IBundleProvider searchGroups(@OptionalParam(name = "name") StringParam name) {
+		String nameMatch = name != null ? name.getValue() : null;
+		List<CohortM> cohorts = cohortService.findMatchingCohortMs(nameMatch, null, null, false);
+		List<Group> results = new ArrayList<>(cohorts.size());
+		for (CohortM cohort : cohorts) {
+			results.add(groupTranslator.toFhirResource(cohort));
+		}
+		return new SimpleBundleProvider(results);
+	}
+	
+	@Read
+	public Group getGroupById(@IdParam @Nonnull IdType id) {
+		CohortM cohort = cohortService.getCohortMByUuid(id.getIdPart());
+		if (cohort == null) {
+			throw new ResourceNotFoundException("Could not find Group with Id " + id.getIdPart());
+		}
+		return groupTranslator.toFhirResource(cohort);
+	}
+	
+	@Create
+	@SuppressWarnings("unused")
+	public MethodOutcome createGroup(@ResourceParam Group group) {
+		CohortM cohort = groupTranslator.toOpenmrsType(group);
+		CohortM saved = cohortService.saveCohortM(cohort);
+		MethodOutcome outcome = new MethodOutcome();
+		outcome.setCreated(true);
+		outcome.setResource(groupTranslator.toFhirResource(saved));
+		outcome.setId(new IdType("Group", saved.getUuid()));
+		return outcome;
+	}
+	
+	@Update
+	@SuppressWarnings("unused")
+	public MethodOutcome updateGroup(@IdParam IdType id, @ResourceParam Group group) {
+		if (id == null || id.getIdPart() == null) {
+			throw new InvalidRequestException("id must be specified to update");
+		}
+		CohortM existing = cohortService.getCohortMByUuid(id.getIdPart());
+		if (existing == null) {
+			throw new ResourceNotFoundException("Could not find Group with Id " + id.getIdPart());
+		}
+		CohortM updated = groupTranslator.toOpenmrsType(existing, group);
+		CohortM saved = cohortService.saveCohortM(updated);
+		MethodOutcome outcome = new MethodOutcome();
+		outcome.setResource(groupTranslator.toFhirResource(saved));
+		outcome.setId(new IdType("Group", saved.getUuid()));
+		return outcome;
+	}
+	
+	@Delete
+	@SuppressWarnings("unused")
+	public OperationOutcome deleteGroup(@IdParam @Nonnull IdType id) {
+		CohortM cohort = cohortService.getCohortMByUuid(id.getIdPart());
+		if (cohort == null) {
+			throw new ResourceNotFoundException("Could not find Group with Id " + id.getIdPart());
+		}
+		cohortService.voidCohortM(cohort, "voided via FHIR request");
+		return new OperationOutcome();
+	}
+}

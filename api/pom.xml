@@ -56,6 +56,13 @@
             <scope>compile</scope>
         </dependency>
         <!-- End OpenMRS core -->
+
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>fhir2-api</artifactId>
+            <scope>provided</scope>
+            <version>2.7.0</version>
+        </dependency>
     </dependencies>
 
     <build>
