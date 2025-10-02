@@ -40,6 +40,7 @@ import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.CohortType;
 import org.openmrs.module.cohort.api.CohortTypeService;
+import org.openmrs.module.fhir2.FhirConstants;
 import org.openmrs.module.fhir2.api.translators.GroupMemberTranslator;
 import org.openmrs.module.fhir2.api.translators.GroupTranslator;
 import org.openmrs.module.fhir2.model.GroupMember;
@@ -57,11 +58,9 @@ import org.springframework.stereotype.Component;
 @Getter(AccessLevel.PROTECTED)
 public class GroupTranslatorImpl extends BaseGroupTranslator implements GroupTranslator {
 	
-	private static final String OPENMRS_FHIR_EXT_PREFIX = "http://fhir.openmrs.org/ext";
+	private static final String GROUP_LIST_TYPE_EXTENSION_URL = FhirConstants.OPENMRS_FHIR_EXT_PREFIX + "/group/list-type";
 	
-	private static final String GROUP_LIST_TYPE_EXTENSION_URL = OPENMRS_FHIR_EXT_PREFIX + "/group/list-type";
-	
-	private static final String GROUP_LOCATION_EXTENSION_URL = OPENMRS_FHIR_EXT_PREFIX + "/group/location";
+	private static final String GROUP_LOCATION_EXTENSION_URL = FhirConstants.OPENMRS_FHIR_EXT_PREFIX + "/group/location";
 	
 	@Autowired
 	private PatientService patientService;
