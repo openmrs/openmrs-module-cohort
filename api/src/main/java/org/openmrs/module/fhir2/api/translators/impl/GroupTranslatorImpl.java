@@ -22,15 +22,24 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Group;
 import org.hl7.fhir.r4.model.Group.GroupMemberComponent;
 import org.hl7.fhir.r4.model.Group.GroupType;
 import org.hl7.fhir.r4.model.Period;
+import org.hl7.fhir.r4.model.Reference;
 import org.openmrs.Cohort;
+import org.openmrs.Location;
 import org.openmrs.Patient;
+import org.openmrs.api.LocationService;
 import org.openmrs.api.PatientService;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
+import org.openmrs.module.cohort.CohortType;
+import org.openmrs.module.cohort.api.CohortTypeService;
 import org.openmrs.module.fhir2.api.translators.GroupMemberTranslator;
 import org.openmrs.module.fhir2.api.translators.GroupTranslator;
 import org.openmrs.module.fhir2.model.GroupMember;
@@ -48,11 +57,23 @@ import org.springframework.stereotype.Component;
 @Getter(AccessLevel.PROTECTED)
 public class GroupTranslatorImpl extends BaseGroupTranslator implements GroupTranslator {
 	
+	private static final String OPENMRS_FHIR_EXT_PREFIX = "http://fhir.openmrs.org/ext";
+	
+	private static final String GROUP_LIST_TYPE_EXTENSION_URL = OPENMRS_FHIR_EXT_PREFIX + "/group/list-type";
+	
+	private static final String GROUP_LOCATION_EXTENSION_URL = OPENMRS_FHIR_EXT_PREFIX + "/group/location";
+	
 	@Autowired
 	private PatientService patientService;
 	
 	@Autowired
 	private GroupMemberTranslator groupMemberTranslator;
+	
+	@Autowired
+	private CohortTypeService cohortTypeService;
+	
+	@Autowired
+	private LocationService locationService;
 	
 	@Override
 	public Group toFhirResource(@Nonnull CohortM cohort) {
@@ -61,6 +82,9 @@ public class GroupTranslatorImpl extends BaseGroupTranslator implements GroupTra
 		Cohort baseCohort = toBaseCohort(cohort);
 		Group group = super.toFhirResource(baseCohort);
 		group.setType(GroupType.PERSON);
+		
+		addListTypeExtension(group, cohort.getCohortType());
+		addLocationExtension(group, cohort.getLocation());
 		
 		Set<CohortMember> members = cohort.getCohortMembers();
 		group.setQuantity(members.size());
@@ -99,6 +123,8 @@ public class GroupTranslatorImpl extends BaseGroupTranslator implements GroupTra
 		
 		Cohort base = super.toOpenmrsType(toBaseCohort(existing), group);
 		applyBaseFields(existing, base);
+		applyListType(existing, group);
+		applyLocation(existing, group);
 		
 		existing.getCohortMembers().clear();
 		if (group.hasMember()) {
@@ -142,5 +168,110 @@ public class GroupTranslatorImpl extends BaseGroupTranslator implements GroupTra
 		target.setDescription(base.getDescription());
 		target.setVoided(base.getVoided());
 		target.setCreator(base.getCreator());
+	}
+	
+	private void addListTypeExtension(Group group, CohortType cohortType) {
+		if (cohortType == null || (cohortType.getUuid() == null && StringUtils.isBlank(cohortType.getName()))) {
+			return;
+		}
+		
+		CodeableConcept listTypeConcept = new CodeableConcept();
+		Coding coding = new Coding();
+		coding.setSystem(GROUP_LIST_TYPE_EXTENSION_URL);
+		if (StringUtils.isNotBlank(cohortType.getUuid())) {
+			coding.setCode(cohortType.getUuid());
+		}
+		if (StringUtils.isNotBlank(cohortType.getName())) {
+			coding.setDisplay(cohortType.getName());
+			listTypeConcept.setText(cohortType.getName());
+		}
+		listTypeConcept.addCoding(coding);
+		
+		group.addExtension(new Extension(GROUP_LIST_TYPE_EXTENSION_URL, listTypeConcept));
+	}
+	
+	private void addLocationExtension(Group group, Location location) {
+		if (location == null || StringUtils.isBlank(location.getUuid())) {
+			return;
+		}
+		
+		Reference reference = new Reference();
+		reference.setReference("Location/" + location.getUuid());
+		if (StringUtils.isNotBlank(location.getName())) {
+			reference.setDisplay(location.getName());
+		}
+		
+		group.addExtension(new Extension(GROUP_LOCATION_EXTENSION_URL, reference));
+	}
+	
+	private void applyListType(CohortM existing, Group group) {
+		Extension extension = group.getExtensionByUrl(GROUP_LIST_TYPE_EXTENSION_URL);
+		if (extension == null || !(extension.getValue() instanceof CodeableConcept)) {
+			return;
+		}
+		
+		CohortType cohortType = resolveCohortType((CodeableConcept) extension.getValue());
+		if (cohortType != null) {
+			existing.setCohortType(cohortType);
+		}
+	}
+	
+	private CohortType resolveCohortType(CodeableConcept concept) {
+		if (concept == null) {
+			return null;
+		}
+		
+		CohortType cohortType = null;
+		if (concept.hasCoding()) {
+			for (Coding coding : concept.getCoding()) {
+				if (StringUtils.isNotBlank(coding.getCode())) {
+					cohortType = cohortTypeService.getCohortTypeByUuid(coding.getCode());
+				}
+				if (cohortType == null && StringUtils.isNotBlank(coding.getDisplay())) {
+					cohortType = cohortTypeService.getCohortTypeByName(coding.getDisplay());
+				}
+				if (cohortType != null) {
+					return cohortType;
+				}
+			}
+		}
+		
+		if (cohortType == null && concept.hasText() && StringUtils.isNotBlank(concept.getText())) {
+			cohortType = cohortTypeService.getCohortTypeByName(concept.getText());
+		}
+		
+		return cohortType;
+	}
+	
+	private void applyLocation(CohortM existing, Group group) {
+		Extension extension = group.getExtensionByUrl(GROUP_LOCATION_EXTENSION_URL);
+		if (extension == null || !(extension.getValue() instanceof Reference)) {
+			return;
+		}
+		
+		Location location = resolveLocation((Reference) extension.getValue());
+		if (location != null) {
+			existing.setLocation(location);
+		}
+	}
+	
+	private Location resolveLocation(Reference reference) {
+		if (reference == null) {
+			return null;
+		}
+		
+		Location location = null;
+		if (reference.hasReference()) {
+			String uuid = reference.getReferenceElement().getIdPart();
+			if (StringUtils.isNotBlank(uuid)) {
+				location = locationService.getLocationByUuid(uuid);
+			}
+		}
+		
+		if (location == null && reference.hasDisplay() && StringUtils.isNotBlank(reference.getDisplay())) {
+			location = locationService.getLocation(reference.getDisplay());
+		}
+		
+		return location;
 	}
 }

@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.OperationOutcome;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.api.CohortService;
 import org.openmrs.module.fhir2.api.translators.GroupTranslator;
+import org.openmrs.module.fhir2.providers.util.FhirProviderUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -87,11 +88,7 @@ public class GroupFhirResourceProvider implements IResourceProvider {
 	public MethodOutcome createGroup(@ResourceParam Group group) {
 		CohortM cohort = groupTranslator.toOpenmrsType(group);
 		CohortM saved = cohortService.saveCohortM(cohort);
-		MethodOutcome outcome = new MethodOutcome();
-		outcome.setCreated(true);
-		outcome.setResource(groupTranslator.toFhirResource(saved));
-		outcome.setId(new IdType("Group", saved.getUuid()));
-		return outcome;
+		return FhirProviderUtils.buildCreate(groupTranslator.toFhirResource(saved));
 	}
 	
 	@Update
@@ -106,10 +103,7 @@ public class GroupFhirResourceProvider implements IResourceProvider {
 		}
 		CohortM updated = groupTranslator.toOpenmrsType(existing, group);
 		CohortM saved = cohortService.saveCohortM(updated);
-		MethodOutcome outcome = new MethodOutcome();
-		outcome.setResource(groupTranslator.toFhirResource(saved));
-		outcome.setId(new IdType("Group", saved.getUuid()));
-		return outcome;
+		return FhirProviderUtils.buildUpdate(groupTranslator.toFhirResource(saved));
 	}
 	
 	@Delete
@@ -120,6 +114,6 @@ public class GroupFhirResourceProvider implements IResourceProvider {
 			throw new ResourceNotFoundException("Could not find Group with Id " + id.getIdPart());
 		}
 		cohortService.voidCohortM(cohort, "voided via FHIR request");
-		return new OperationOutcome();
+		return FhirProviderUtils.buildDeleteR4();
 	}
 }
