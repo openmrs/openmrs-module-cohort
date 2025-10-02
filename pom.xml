@@ -57,7 +57,7 @@
         <javaxServletVersion>4.0.1</javaxServletVersion>
         <mockitoInlineVersion>4.8.0</mockitoInlineVersion>
         <byteBuddyVersion>1.17.7</byteBuddyVersion>
-        <openmrsFhir2Version>2.5.0</openmrsFhir2Version>
+        <openmrsFhir2Version>2.7.0</openmrsFhir2Version>
     </properties>
 
     <dependencyManagement>
