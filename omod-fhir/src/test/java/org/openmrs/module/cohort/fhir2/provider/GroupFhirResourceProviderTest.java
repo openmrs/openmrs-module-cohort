@@ -1,4 +1,4 @@
-package org.openmrs.module.fhir2.providers;
+package org.openmrs.module.cohort.fhir2.provider;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.fhir2.api.translators.GroupTranslator;
+import org.openmrs.module.cohort.fhir2.translator.GroupTranslator;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GroupFhirResourceProviderTest {

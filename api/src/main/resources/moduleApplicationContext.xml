@@ -18,10 +18,6 @@
 
     <context:annotation-config />
     <context:component-scan base-package="org.openmrs.module.cohort"/>
-    <context:component-scan base-package="org.openmrs.module.fhir2.api">
-        <context:exclude-filter type="custom"
-                                expression="org.openmrs.annotation.OpenmrsProfileExcludeFilter"/>
-    </context:component-scan>
 
     <bean id="hapiLoggingInterceptor" class="ca.uhn.fhir.rest.server.interceptor.LoggingInterceptor">
         <property name="loggerName" value="org.openmrs.module.fhir2.accessLog"/>

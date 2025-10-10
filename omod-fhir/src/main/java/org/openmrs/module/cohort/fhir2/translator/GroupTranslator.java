@@ -7,7 +7,7 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.fhir2.api.translators;
+package org.openmrs.module.cohort.fhir2.translator;
 
 import javax.annotation.Nonnull;
 
@@ -17,7 +17,7 @@ import org.openmrs.module.cohort.CohortM;
 /**
  * Translates between {@link CohortM} and FHIR {@link Group} resources.
  */
-public interface GroupTranslator extends OpenmrsFhirUpdatableTranslator<CohortM, Group> {
+public interface GroupTranslator {
 	
 	/**
 	 * Converts an OpenMRS {@link CohortM} to a FHIR {@link Group} resource.
@@ -25,7 +25,6 @@ public interface GroupTranslator extends OpenmrsFhirUpdatableTranslator<CohortM,
 	 * @param cohort the cohort to convert
 	 * @return the corresponding FHIR Group
 	 */
-	@Override
 	Group toFhirResource(@Nonnull CohortM cohort);
 	
 	/**
@@ -34,7 +33,6 @@ public interface GroupTranslator extends OpenmrsFhirUpdatableTranslator<CohortM,
 	 * @param group the FHIR group
 	 * @return the new cohort instance
 	 */
-	@Override
 	CohortM toOpenmrsType(@Nonnull Group group);
 	
 	/**
@@ -44,6 +42,5 @@ public interface GroupTranslator extends OpenmrsFhirUpdatableTranslator<CohortM,
 	 * @param group the FHIR group providing the new values
 	 * @return the updated cohort
 	 */
-	@Override
 	CohortM toOpenmrsType(@Nonnull CohortM existing, @Nonnull Group group);
 }

@@ -7,12 +7,13 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.fhir2.providers;
+package org.openmrs.module.cohort.fhir2.provider;
 
 import javax.annotation.Nonnull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.Delete;
@@ -37,17 +38,13 @@ import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.OperationOutcome;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.fhir2.api.translators.GroupTranslator;
+import org.openmrs.module.cohort.fhir2.translator.GroupTranslator;
 import org.openmrs.module.fhir2.providers.util.FhirProviderUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
 
 /**
  * FHIR resource provider for {@link Group} resources backed by {@link CohortM}.
  */
-@Primary
-@Component("cohortGroupFhirResourceProvider")
 @Setter(AccessLevel.PACKAGE)
 @Getter(AccessLevel.PROTECTED)
 public class GroupFhirResourceProvider implements IResourceProvider {
@@ -86,7 +83,7 @@ public class GroupFhirResourceProvider implements IResourceProvider {
 	@Create
 	@SuppressWarnings("unused")
 	public MethodOutcome createGroup(@ResourceParam Group group) {
-		CohortM cohort = groupTranslator.toOpenmrsType(group);
+		CohortM cohort = groupTranslator.toOpenmrsType(Objects.requireNonNull(group));
 		CohortM saved = cohortService.saveCohortM(cohort);
 		return FhirProviderUtils.buildCreate(groupTranslator.toFhirResource(saved));
 	}
@@ -101,7 +98,7 @@ public class GroupFhirResourceProvider implements IResourceProvider {
 		if (existing == null) {
 			throw new ResourceNotFoundException("Could not find Group with Id " + id.getIdPart());
 		}
-		CohortM updated = groupTranslator.toOpenmrsType(existing, group);
+		CohortM updated = groupTranslator.toOpenmrsType(existing, Objects.requireNonNull(group));
 		CohortM saved = cohortService.saveCohortM(updated);
 		return FhirProviderUtils.buildUpdate(groupTranslator.toFhirResource(saved));
 	}
