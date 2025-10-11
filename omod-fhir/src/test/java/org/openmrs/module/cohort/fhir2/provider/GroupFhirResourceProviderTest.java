@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -14,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import ca.uhn.fhir.rest.api.PatchTypeEnum;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
@@ -26,6 +29,7 @@ import org.hl7.fhir.r4.model.OperationOutcome;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.module.cohort.CohortM;
@@ -156,6 +160,85 @@ public class GroupFhirResourceProviderTest {
 		verify(groupTranslator).toOpenmrsType(existing, input);
 		verify(cohortService).saveCohortM(updated);
 		verify(groupTranslator).toFhirResource(saved);
+	}
+	
+	@Test
+	public void patchGroup_shouldApplyJsonPatchAndPersistCohort() {
+		IdType id = new IdType("Group", GROUP_UUID);
+		CohortM existing = new CohortM();
+		CohortM updated = new CohortM();
+		CohortM saved = new CohortM();
+		saved.setUuid(GROUP_UUID);
+		Group existingGroup = new Group();
+		existingGroup.setName("Initial name");
+		Group savedGroup = new Group();
+		String patchBody = "[{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"Updated name\"}]";
+		
+		when(cohortService.getCohortMByUuid(GROUP_UUID)).thenReturn(existing);
+		when(groupTranslator.toFhirResource(existing)).thenReturn(existingGroup);
+		when(groupTranslator.toOpenmrsType(eq(existing), any(Group.class))).thenReturn(updated);
+		when(cohortService.saveCohortM(updated)).thenReturn(saved);
+		when(groupTranslator.toFhirResource(saved)).thenReturn(savedGroup);
+		
+		MethodOutcome outcome = provider.patchGroup(id, PatchTypeEnum.JSON_PATCH, patchBody, null);
+		
+		assertThat(outcome.getCreated(), is(false));
+		assertThat(outcome.getResource(), is(savedGroup));
+		
+		ArgumentCaptor<Group> groupCaptor = ArgumentCaptor.forClass(Group.class);
+		verify(groupTranslator).toOpenmrsType(eq(existing), groupCaptor.capture());
+		assertThat(groupCaptor.getValue().getName(), is("Updated name"));
+		
+		verify(cohortService).saveCohortM(updated);
+	}
+	
+	@Test
+	public void patchGroup_shouldApplyXmlPatchAndPersistCohort() {
+		IdType id = new IdType("Group", GROUP_UUID);
+		CohortM existing = new CohortM();
+		CohortM updated = new CohortM();
+		CohortM saved = new CohortM();
+		saved.setUuid(GROUP_UUID);
+		Group existingGroup = new Group();
+		existingGroup.setName("Initial name");
+		Group savedGroup = new Group();
+		String patchBody = "<patch xmlns=\"urn:ietf:params:xml:ns:xml-patch\" xmlns:f=\"http://hl7.org/fhir\">"
+		        + "<replace sel=\"/f:Group/f:name/@value\">Updated name</replace></patch>";
+		
+		when(cohortService.getCohortMByUuid(GROUP_UUID)).thenReturn(existing);
+		when(groupTranslator.toFhirResource(existing)).thenReturn(existingGroup);
+		when(groupTranslator.toOpenmrsType(eq(existing), any(Group.class))).thenReturn(updated);
+		when(cohortService.saveCohortM(updated)).thenReturn(saved);
+		when(groupTranslator.toFhirResource(saved)).thenReturn(savedGroup);
+		
+		MethodOutcome outcome = provider.patchGroup(id, PatchTypeEnum.XML_PATCH, patchBody, null);
+		
+		assertThat(outcome.getCreated(), is(false));
+		assertThat(outcome.getResource(), is(savedGroup));
+		
+		ArgumentCaptor<Group> groupCaptor = ArgumentCaptor.forClass(Group.class);
+		verify(groupTranslator).toOpenmrsType(eq(existing), groupCaptor.capture());
+		assertThat(groupCaptor.getValue().getName(), is("Updated name"));
+		
+		verify(cohortService).saveCohortM(updated);
+	}
+	
+	@Test(expected = InvalidRequestException.class)
+	public void patchGroup_shouldThrowWhenIdMissing() {
+		provider.patchGroup(null, PatchTypeEnum.JSON_PATCH, "{}", null);
+	}
+	
+	@Test(expected = InvalidRequestException.class)
+	public void patchGroup_shouldThrowWhenIdPartMissing() {
+		provider.patchGroup(new IdType(), PatchTypeEnum.JSON_PATCH, "{}", null);
+	}
+	
+	@Test(expected = ResourceNotFoundException.class)
+	public void patchGroup_shouldThrowWhenCohortNotFound() {
+		IdType id = new IdType("Group", GROUP_UUID);
+		when(cohortService.getCohortMByUuid(GROUP_UUID)).thenReturn(null);
+		
+		provider.patchGroup(id, PatchTypeEnum.JSON_PATCH, "{}", null);
 	}
 	
 	@Test(expected = InvalidRequestException.class)
