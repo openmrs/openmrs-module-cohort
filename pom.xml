@@ -41,8 +41,8 @@
 
     <modules>
         <module>api</module>
-        <module>omod</module>
         <module>omod-fhir</module>
+        <module>omod</module>
     </modules>
 
     <properties>
