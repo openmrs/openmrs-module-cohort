@@ -87,28 +87,6 @@
                 <groupId>net.revelc.code</groupId>
                 <artifactId>impsort-maven-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>org.openmrs.maven.plugins</groupId>
-                <artifactId>maven-openmrs-plugin</artifactId>
-                <version>1.0.1</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>init</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>initialize-module</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>pack</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>package-module</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
