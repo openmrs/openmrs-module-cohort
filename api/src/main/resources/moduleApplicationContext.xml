@@ -19,6 +19,10 @@
     <context:annotation-config />
     <context:component-scan base-package="org.openmrs.module.cohort"/>
 
+    <bean id="hapiLoggingInterceptor" class="ca.uhn.fhir.rest.server.interceptor.LoggingInterceptor">
+        <property name="loggerName" value="org.openmrs.module.fhir2.accessLog"/>
+    </bean>
+
     <bean id="cohort.cohortService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="transactionManager" ref="transactionManager"/>
         <property name="target">

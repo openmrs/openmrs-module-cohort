@@ -41,6 +41,7 @@
 
     <modules>
         <module>api</module>
+        <module>omod-fhir</module>
         <module>omod</module>
     </modules>
 
@@ -57,6 +58,7 @@
         <javaxServletVersion>4.0.1</javaxServletVersion>
         <mockitoInlineVersion>4.8.0</mockitoInlineVersion>
         <byteBuddyVersion>1.17.7</byteBuddyVersion>
+        <openmrsFhir2Version>2.7.0</openmrsFhir2Version>
     </properties>
 
     <dependencyManagement>
@@ -201,6 +203,26 @@
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>fhir2-api</artifactId>
+            <version>${openmrsFhir2Version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>fhir2-omod</artifactId>
+            <version>${openmrsFhir2Version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>fhir2-omod</artifactId>
+            <version>${openmrsFhir2Version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

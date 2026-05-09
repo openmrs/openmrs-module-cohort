@@ -37,7 +37,9 @@
     </require_modules>
 
     <aware_of_modules>
+        <aware_of_module>org.openmrs.module.webservices.rest</aware_of_module>
         <aware_of_module>org.openmrs.module.legacyui</aware_of_module>
+        <aware_of_module>org.openmrs.module.fhir2</aware_of_module>
     </aware_of_modules>
 
     <!-- Adds link to admin page -->
@@ -85,5 +87,16 @@
         <file>messages_es.properties</file>
     </messages>
     <!-- /Internationalization -->
+    <conditionalResources>
+        <conditionalResource>
+            <path>/lib/cohort-omod-fhir-${project.parent.version}.jar</path>
+            <modules>
+                <module>
+                    <moduleId>org.openmrs.module.fhir2</moduleId>
+                    <version>${openmrsFhir2Version}</version>
+                </module>
+            </modules>
+        </conditionalResource>
+    </conditionalResources>
 </module>
 
