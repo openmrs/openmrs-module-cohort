@@ -11,9 +11,8 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
 
-public class CohortResourceControllerTest extends MainResourceControllerTest {
+public class CohortResourceControllerTest extends BaseCohortRestControllerTest {
 	
 	@Override
 	public long getAllCount() {

@@ -23,10 +23,9 @@ import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
 import org.springframework.context.annotation.Description;
 
-public class CohortMemberResourceControllerTest extends MainResourceControllerTest {
+public class CohortMemberResourceControllerTest extends BaseCohortRestControllerTest {
 	
 	private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 	
