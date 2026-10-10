@@ -9,7 +9,7 @@
  */
 package org.openmrs.module.cohort.api.impl;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +19,9 @@ import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.customdatatype.CustomDatatypeUtil;
 import org.openmrs.module.cohort.CohortAttribute;
 import org.openmrs.module.cohort.CohortAttributeType;
 import org.openmrs.module.cohort.CohortM;
@@ -81,6 +83,12 @@ public class CohortServiceImpl extends BaseOpenmrsService implements CohortServi
 	
 	@Override
 	public CohortM saveCohortM(@NotNull CohortM cohortM) {
+		CustomDatatypeUtil.saveAttributesIfNecessary(cohortM);
+		if (Hibernate.isInitialized(cohortM.getCohortMembers())) {
+			// members added through the cohort are inserted by cascade, so their attribute values are serialized here too
+			cohortM.getCohortMembers().stream().filter(member -> member.getId() == null)
+			        .forEach(CustomDatatypeUtil::saveAttributesIfNecessary);
+		}
 		return cohortDao.createOrUpdate(cohortM);
 	}
 	
@@ -105,6 +113,7 @@ public class CohortServiceImpl extends BaseOpenmrsService implements CohortServi
 	
 	@Override
 	public CohortAttribute saveCohortAttribute(@NotNull CohortAttribute attribute) {
+		CustomDatatypeUtil.saveIfDirty(attribute);
 		return cohortAttributeDao.createOrUpdate(attribute);
 	}
 	

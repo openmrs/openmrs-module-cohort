@@ -15,12 +15,14 @@
 <hibernate-mapping package="org.openmrs.module.cohort">
     <class name="CohortMemberAttribute" table="cohort_member_attribute">
         <id name="id" type="int" column="cohort_member_attribute_id">
-            <generator class="native">
+            <generator class="identity">
                 <param name="sequence">cohort_member_attribute_id_seq</param>
             </generator>
         </id>
         <many-to-one name="cohortMember" class="CohortMember" not-null="true" column="cohort_member_id" />
-        <many-to-one name="attributeType" class="CohortMemberAttributeType" not-null="true" column="attribute_type_id" />
+        <!-- read-only alias of "cohortMember": BaseCustomizableData maps attributes as mappedBy="owner" since Platform 3.0 -->
+        <many-to-one name="owner" class="CohortMember" column="cohort_member_id" insert="false" update="false" />
+        <many-to-one name="attributeType" class="CohortMemberAttributeType" not-null="true" column="cohort_member_attribute_type_id" />
         <property name="valueReference" type="text" not-null="true" access="field" column="value_reference" length="65535" />
         <many-to-one name="creator" class="org.openmrs.User" not-null="true" column="creator" />
         <property name="dateCreated" type="timestamp" column="date_created" not-null="true" length="19" />

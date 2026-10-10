@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    This Source Code Form is subject to the terms of the Mozilla Public License,
+    v. 2.0. If a copy of the MPL was not distributed with this file, You can
+    obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+    the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+
+    Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+    graphic logo is a trademark of OpenMRS Inc.
+-->
+<!-- Loaded after CohortDaoTest_initialTestData.xml and CohortMemberDaoTest_initialTestData.xml -->
+<dataset>
+    <cohort cohort_id="14" name="TB patients" description="Patients on TB treatment" is_group_cohort="0" creator="1"
+            definition_handler="org.openmrs.module.cohort.definition.handler.DefaultCohortDefinitionHandler"
+            date_created="2021-10-14 00:00:00.0" voided="false" uuid="ed04753a-dc06-46a8-b73b-b28be8deb06e"/>
+    <!-- COVID-19 patients (cohort 12): patient 7 has left it, patient 8 is still in it -->
+    <cohort_member cohort_member_id="2" patient_id="7" cohort_id="12" creator="1" date_created="2021-06-07 00:00:00.0"
+                   start_date="2021-06-07 00:00:00.0" end_date="2022-01-01 00:00:00.0" voided="false"
+                   uuid="f8067169-c3bb-427b-bccb-142c1e4fd798"/>
+    <cohort_member cohort_member_id="3" patient_id="8" cohort_id="12" creator="1" date_created="2021-06-07 00:00:00.0"
+                   start_date="2021-06-07 00:00:00.0" voided="false" uuid="757c3449-75c7-4020-ac4e-202de9f0df22"/>
+    <!-- patient 2 left TB patients and later rejoined -->
+    <cohort_member cohort_member_id="4" patient_id="2" cohort_id="14" creator="1" date_created="2021-06-07 00:00:00.0"
+                   start_date="2021-06-07 00:00:00.0" end_date="2022-01-01 00:00:00.0" voided="false"
+                   uuid="f3b0296b-a9b2-4243-b3f1-fc3fb0e8b36a"/>
+    <cohort_member cohort_member_id="5" patient_id="2" cohort_id="14" creator="1" date_created="2022-03-01 00:00:00.0"
+                   start_date="2022-03-01 00:00:00.0" voided="false" uuid="294b9246-78db-47e4-af73-fd7020d87497"/>
+</dataset>

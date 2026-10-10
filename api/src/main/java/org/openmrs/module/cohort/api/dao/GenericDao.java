@@ -9,10 +9,13 @@
  */
 package org.openmrs.module.cohort.api.dao;
 
-import java.util.Collection;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Criterion;
+import java.util.Collection;
+import java.util.function.BiFunction;
+
 import org.openmrs.Auditable;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.module.cohort.api.dao.search.ISearchQuery;
@@ -46,9 +49,7 @@ public interface GenericDao<W extends OpenmrsObject & Auditable> {
 	
 	W findByUniqueProp(PropValue propValue, boolean includeRetired);
 	
-	Collection<W> findByOr(Criterion... predicates);
+	Collection<W> findByOr(BiFunction<CriteriaBuilder, Root<W>, Predicate>... predicates);
 	
-	Collection<W> findByAnd(Criterion... predicates);
-	
-	Criteria createCriteria();
+	Collection<W> findByAnd(BiFunction<CriteriaBuilder, Root<W>, Predicate>... predicates);
 }

@@ -9,16 +9,17 @@
  */
 package org.openmrs.module.cohort.api.dao.search;
 
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.validation.constraints.NotNull;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -38,12 +39,12 @@ public abstract class AbstractSearchHandler implements ISearchQuery {
 	 * Finds cohort members matching the specified name(can be givenName, middleName, or familyName)
 	 *
 	 * @param name givenName, middleName, or familyName
-	 * @return {@link org.hibernate.Criteria}
+	 * @return a {@link Predicate} on an inner join of the patient's names
 	 */
-	protected Criteria handleNames(Criteria criteria, String patientAlias, @NotNull String name) {
-		return criteria.createCriteria(patientAlias + ".names", "_pn")
-		        .add(Restrictions.or(Restrictions.like("_pn.givenName", name, MatchMode.START),
-		            Restrictions.like("_pn.familyName", name, MatchMode.START),
-		            Restrictions.like("_pn.middleName", name, MatchMode.START)));
+	protected Predicate handleNames(CriteriaBuilder cb, From<?, ?> patient, @NotNull String name) {
+		Join<?, ?> personName = patient.join("names");
+		String pattern = name + "%";
+		return cb.or(cb.like(personName.get("givenName"), pattern), cb.like(personName.get("familyName"), pattern),
+		    cb.like(personName.get("middleName"), pattern));
 	}
 }

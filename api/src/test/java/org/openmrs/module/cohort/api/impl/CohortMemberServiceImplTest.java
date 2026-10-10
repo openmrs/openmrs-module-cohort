@@ -16,18 +16,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.CohortMemberAttribute;
 import org.openmrs.module.cohort.CohortMemberAttributeType;
 import org.openmrs.module.cohort.api.dao.GenericDao;
 import org.openmrs.module.cohort.api.dao.search.SearchQueryHandler;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CohortMemberServiceImplTest {
 	
 	private final String COHORT_MEMBER_ATTRIBUTE_TYPE_UUID = "6e0d1303-9a41-40ce-b951-3d8e2aadbf99";
@@ -48,7 +48,7 @@ public class CohortMemberServiceImplTest {
 	
 	private CohortMemberServiceImpl cohortMemberService;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
 		cohortMemberService = new CohortMemberServiceImpl(cohortMemberDao, cohortMemberAttributeTypeDao,
 		        cohortMemberAttributeDao);

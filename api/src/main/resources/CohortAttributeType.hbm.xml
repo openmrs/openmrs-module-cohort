@@ -15,7 +15,7 @@
 <hibernate-mapping package="org.openmrs.module.cohort">
     <class name="CohortAttributeType" table="cohort_attribute_type">
         <id name="cohortAttributeTypeId" type="int" column="cohort_attribute_type_id">
-            <generator class="native">
+            <generator class="identity">
                 <param name="sequence">cohort_attribute_type_id_seq</param>
             </generator>
         </id>

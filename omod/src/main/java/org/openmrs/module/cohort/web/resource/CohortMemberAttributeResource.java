@@ -26,7 +26,7 @@ import org.openmrs.module.webservices.rest.web.v1_0.resource.openmrs1_9.BaseAttr
 
 @SuppressWarnings("unused")
 @SubResource(parent = CohortMemberResource.class, path = "attribute", supportedClass = CohortMemberAttribute.class, supportedOpenmrsVersions = {
-        "1.8 - 2.*" })
+        "1.8 - 9.*" })
 public class CohortMemberAttributeResource extends BaseAttributeCrudResource1_9<CohortMemberAttribute, CohortMember, CohortMemberResource> {
 	
 	@Override

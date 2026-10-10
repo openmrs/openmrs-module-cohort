@@ -1,8 +1,8 @@
 package org.openmrs.module.cohort.web.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -19,8 +19,11 @@ import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonName;
 import org.openmrs.api.context.Context;
+import org.openmrs.customdatatype.datatype.FreeTextDatatype;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
+import org.openmrs.module.cohort.CohortMemberAttribute;
+import org.openmrs.module.cohort.CohortMemberAttributeType;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
@@ -82,6 +85,33 @@ public class CohortMemberResourceControllerTest extends MainResourceControllerTe
 		assertEquals(patient.getUuid(), cohortMember.getPatient().getUuid());
 		assertNotNull(cohortMember.getStartDate());
 		assertNull(cohortMember.getEndDate());
+	}
+	
+	@Test
+	@Description("Verifies if a new CohortMember can be created with its attributes")
+	public void shouldCreateNewCohortMemberWithAttributes() throws Exception {
+		Context.getService(CohortService.class).saveCohortM(cohort);
+		CohortMemberAttributeType role = new CohortMemberAttributeType();
+		role.setName("Role");
+		role.setDatatypeClassname(FreeTextDatatype.class.getName());
+		Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
+		
+		String json = String.format(
+		    "{ \"cohort\": \"%s\", \"patient\":\"%s\", \"startDate\":\"2023-08-22T01:00:00.000+0000\","
+		            + " \"attributes\": [ { \"attributeType\": \"%s\", \"value\": \"treasurer\" } ] }",
+		    cohort.getUuid(), patient.getUuid(), role.getUuid());
+		
+		handle(newPostRequest(getURI(), json));
+		Context.flushSession();
+		Context.clearSession();
+		
+		Collection<CohortMember> cohortMembers = Context.getService(CohortMemberService.class).findAllCohortMembers();
+		assertEquals(1, cohortMembers.size());
+		Collection<CohortMemberAttribute> attributes = cohortMembers.iterator().next().getActiveAttributes();
+		assertEquals(1, attributes.size());
+		CohortMemberAttribute attribute = attributes.iterator().next();
+		assertEquals(role.getUuid(), attribute.getAttributeType().getUuid());
+		assertEquals("treasurer", attribute.getValueReference());
 	}
 	
 	@Test

@@ -131,4 +131,20 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="free_text_datatype_for_string_attribute_types_20261008" author="dkayiwa">
+        <comment>
+            java.lang.String is not a CustomDatatype, so an attribute of such a type (like the Cohort Leader one created
+            above) cannot be rendered once Platform 3.0 loads attributes with their cohort or member.
+            FreeTextDatatype keeps the same value.
+        </comment>
+        <update tableName="cohort_member_attribute_type">
+            <column name="datatype" value="org.openmrs.customdatatype.datatype.FreeTextDatatype"/>
+            <where>datatype = 'java.lang.String'</where>
+        </update>
+        <update tableName="cohort_attribute_type">
+            <column name="datatype" value="org.openmrs.customdatatype.datatype.FreeTextDatatype"/>
+            <where>datatype = 'java.lang.String'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

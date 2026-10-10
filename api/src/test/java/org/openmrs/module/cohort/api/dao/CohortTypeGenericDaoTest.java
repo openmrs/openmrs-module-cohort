@@ -13,18 +13,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import javax.persistence.PersistenceException;
+import jakarta.persistence.PersistenceException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortType;
 import org.openmrs.module.cohort.api.CohortTypeService;
 import org.openmrs.module.cohort.api.dao.search.PropValue;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -42,7 +43,7 @@ public class CohortTypeGenericDaoTest extends BaseModuleContextSensitiveTest {
 	@Qualifier("cohortTypeDao")
 	private GenericDao<CohortType> dao;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		executeDataSet(COHORT_TYPE_INITIAL_TEST_DATA_XML);
 	}
@@ -92,12 +93,14 @@ public class CohortTypeGenericDaoTest extends BaseModuleContextSensitiveTest {
 		assertNull(afterAttemptPurge);
 	}
 	
-	@Test(expected = PersistenceException.class)
+	@Test
 	public void shouldThrowExceptionForPurgeCohortType() {
 		CohortType cohortType = dao.get("94517bf9-d9d6-4726-b4f1-a2dff6b36e2d");
 		assertNotNull(cohortType);
-		dao.delete(cohortType);
-		Context.flushSession();
+		assertThrows(PersistenceException.class, () -> {
+			dao.delete(cohortType);
+			Context.flushSession();
+		});
 	}
 	
 }

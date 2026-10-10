@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    This Source Code Form is subject to the terms of the Mozilla Public License,
+    v. 2.0. If a copy of the MPL was not distributed with this file, You can
+    obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+    the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+
+    Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+    graphic logo is a trademark of OpenMRS Inc.
+-->
+<dataset>
+    <cohort cohort_id="21" name="Kisumu mothers" description="Mothers attending in Kisumu" is_group_cohort="0" creator="1"
+            definition_handler="org.openmrs.module.cohort.definition.handler.DefaultCohortDefinitionHandler"
+            date_created="2021-10-14 00:00:00.0" voided="false" uuid="fb0e766c-8560-49f8-9a12-952ed2941c35"/>
+    <cohort cohort_id="22" name="Nairobi youth" description="Youth attending in Nairobi" is_group_cohort="0" creator="1"
+            definition_handler="org.openmrs.module.cohort.definition.handler.DefaultCohortDefinitionHandler"
+            date_created="2021-10-14 00:00:00.0" voided="false" uuid="bc21b1d1-4e7c-423c-a43d-af18711e24cb"/>
+    <cohort cohort_id="23" name="Machakos elders" description="Cohort without attributes" is_group_cohort="0" creator="1"
+            definition_handler="org.openmrs.module.cohort.definition.handler.DefaultCohortDefinitionHandler"
+            date_created="2021-10-14 00:00:00.0" voided="false" uuid="bc946fc0-5fd1-4895-839a-f57a6c7456d8"/>
+    <cohort_attribute_type cohort_attribute_type_id="101" name="Facility" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype"
+                           min_occurs="0" description="Facility the cohort meets at" creator="1"
+                           date_created="2021-10-14 00:00:00.0" retired="false" uuid="5be9d5e1-dddb-4b5a-89c3-878c53a7c0af"/>
+    <cohort_attribute_type cohort_attribute_type_id="102" name="Program" datatype="org.openmrs.customdatatype.datatype.FreeTextDatatype"
+                           min_occurs="0" description="Program the cohort belongs to" creator="1"
+                           date_created="2021-10-14 00:00:00.0" retired="false" uuid="7fc209ee-b952-4dc5-a27f-ad19e324a16c"/>
+    <!-- Kisumu mothers has two Facility attributes containing "Kisumu" -->
+    <cohort_attribute cohort_attribute_id="11" attribute_type_id="101" value_reference="Kisumu County Hospital" creator="1"
+                      cohort_id="21" date_created="2021-10-14 00:00:00.0" voided="false"
+                      uuid="8e2fb47e-400f-427d-a697-a0461f6e3421"/>
+    <cohort_attribute cohort_attribute_id="12" attribute_type_id="101" value_reference="Kisumu Annex" creator="1"
+                      cohort_id="21" date_created="2021-10-14 00:00:00.0" voided="false"
+                      uuid="1610ea26-0c87-4af8-91b6-a912cdc2f950"/>
+    <!-- Nairobi youth mentions "Kisumu" only in a voided Facility attribute and in its Program -->
+    <cohort_attribute cohort_attribute_id="13" attribute_type_id="101" value_reference="Nairobi Clinic" creator="1"
+                      cohort_id="22" date_created="2021-10-14 00:00:00.0" voided="false"
+                      uuid="7722a378-5692-4406-aaa3-a67d8f43fd76"/>
+    <cohort_attribute cohort_attribute_id="14" attribute_type_id="101" value_reference="Kisumu Old Site" creator="1"
+                      cohort_id="22" date_created="2021-10-14 00:00:00.0" voided="true" voided_by="1"
+                      date_voided="2022-01-01 00:00:00.0" void_reason="Moved to Nairobi"
+                      uuid="1d1b40c5-9e8d-421d-b6e8-5413446b6bde"/>
+    <cohort_attribute cohort_attribute_id="15" attribute_type_id="102" value_reference="Kisumu youth program" creator="1"
+                      cohort_id="22" date_created="2021-10-14 00:00:00.0" voided="false"
+                      uuid="dfa82e61-870d-495f-bfea-aa7c8050fce6"/>
+</dataset>

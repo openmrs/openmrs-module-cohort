@@ -108,7 +108,7 @@ Response
   "description": "desc",
   "minOccurs": 1,
   "maxOccurs": 3,
-  "datatypeClassname": "string",
+  "datatypeClassname": "org.openmrs.customdatatype.datatype.FreeTextDatatype",
   "preferredHandlerClassname": null,
   "retired": true,
   "links": [
@@ -137,7 +137,7 @@ body
 {
   "name": "Cohort member attribute type name",
   "description": "This is the description",
-  "datatypeClassname": "java.lang.String"
+  "datatypeClassname": "org.openmrs.customdatatype.datatype.FreeTextDatatype"
 }
 ```
  - Update cohort member attribute type

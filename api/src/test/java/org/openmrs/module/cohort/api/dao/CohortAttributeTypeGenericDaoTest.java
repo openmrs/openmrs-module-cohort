@@ -15,11 +15,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.module.cohort.CohortAttributeType;
 import org.openmrs.module.cohort.api.dao.search.PropValue;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -37,7 +37,7 @@ public class CohortAttributeTypeGenericDaoTest extends BaseModuleContextSensitiv
 	@Qualifier("cohortAttributeTypeDao")
 	private GenericDao<CohortAttributeType> dao;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		executeDataSet(COHORT_ATTRIBUTE_TYPE_INITIAL_TEST_DATA_XML);
 	}
@@ -69,14 +69,12 @@ public class CohortAttributeTypeGenericDaoTest extends BaseModuleContextSensitiv
 	@Test
 	public void shouldCreateNewCohortAttributeType() {
 		CohortAttributeType cohortAttributeTypeToCreate = new CohortAttributeType();
-		cohortAttributeTypeToCreate.setCohortAttributeTypeId(10);
 		cohortAttributeTypeToCreate.setUuid("fg89jk-34jkl5ks-4583-34jks90");
 		cohortAttributeTypeToCreate.setName("test cohort attribute type");
 		
 		CohortAttributeType newlyCreatedAttributeType = dao.createOrUpdate(cohortAttributeTypeToCreate);
 		assertThat(newlyCreatedAttributeType, notNullValue());
-		assertThat(newlyCreatedAttributeType.getCohortAttributeTypeId(),
-		    is(cohortAttributeTypeToCreate.getCohortAttributeTypeId()));
+		assertThat(newlyCreatedAttributeType.getCohortAttributeTypeId(), notNullValue());
 		assertThat(newlyCreatedAttributeType.getName(), is(cohortAttributeTypeToCreate.getName()));
 	}
 	

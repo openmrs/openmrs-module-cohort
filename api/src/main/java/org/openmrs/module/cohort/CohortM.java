@@ -9,17 +9,17 @@
  */
 package org.openmrs.module.cohort;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -30,7 +30,7 @@ import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import org.openmrs.Auditable;
 import org.openmrs.BaseCustomizableData;
 import org.openmrs.Location;
@@ -55,7 +55,7 @@ public class CohortM extends BaseCustomizableData<CohortAttribute> implements Au
 	}
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "cohort_id")
 	private Integer cohortId;
 	
@@ -79,7 +79,7 @@ public class CohortM extends BaseCustomizableData<CohortAttribute> implements Au
 	private Set<CohortMember> cohortMembers;
 	
 	@OneToMany(mappedBy = "cohort", cascade = CascadeType.ALL)
-	@Where(clause = "voided = 0 and (start_date is null or start_date <= current_timestamp()) and (end_date is null or end_date >= current_timestamp())")
+	@SQLRestriction("voided = 0 and (start_date is null or start_date <= current_timestamp()) and (end_date is null or end_date >= current_timestamp())")
 	private Set<CohortMember> activeCohortMembers;
 	
 	@Column(name = "is_group_cohort")

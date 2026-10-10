@@ -9,10 +9,10 @@
  */
 package org.openmrs.module.cohort.api.impl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,11 +20,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openmrs.Location;
 import org.openmrs.module.cohort.CohortAttribute;
 import org.openmrs.module.cohort.CohortAttributeType;
@@ -33,7 +33,7 @@ import org.openmrs.module.cohort.CohortType;
 import org.openmrs.module.cohort.api.dao.GenericDao;
 import org.openmrs.module.cohort.api.dao.search.PropValue;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CohortServiceImplTest {
 	
 	private static final String COHORT_UUID = "5c28c01f-199a-48c7-8693-2a504dd1f4ab";
@@ -51,7 +51,7 @@ public class CohortServiceImplTest {
 	
 	private CohortServiceImpl cohortService;
 	
-	@Before
+	@BeforeEach
 	public void setup() {
 		cohortService = new CohortServiceImpl(cohortDao, cohortAttributeDao, cohortAttributeTypeDao);
 	}

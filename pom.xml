@@ -46,22 +46,26 @@
 
     <properties>
         <main.basedir>${project.basedir}</main.basedir>
-        <openMRSVersion>2.7.4</openMRSVersion>
-        <webservicesRestVersion>3.0.0-SNAPSHOT</webservicesRestVersion>
-        <legacyUiVersion>2.0.0-SNAPSHOT</legacyUiVersion>
+        <openMRSVersion>3.0.0-SNAPSHOT</openMRSVersion>
+        <webservicesRestVersion>5.0.0-SNAPSHOT</webservicesRestVersion>
+        <legacyUiVersion>3.0.0-SNAPSHOT</legacyUiVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <lombokVersion>1.18.38</lombokVersion>
         <openmrsPlatformToolsVersion>2.4.0</openmrsPlatformToolsVersion>
-        <javaxServletVersion>4.0.1</javaxServletVersion>
-        <mockitoInlineVersion>4.8.0</mockitoInlineVersion>
-        <byteBuddyVersion>1.17.7</byteBuddyVersion>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <!-- Begin OpenMRS core -->
+            <dependency>
+                <groupId>org.openmrs</groupId>
+                <artifactId>openmrs-bom</artifactId>
+                <version>${openMRSVersion}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.openmrs.api</groupId>
                 <artifactId>openmrs-api</artifactId>
@@ -75,12 +79,6 @@
                 <version>${openMRSVersion}</version>
                 <type>jar</type>
                 <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.openmrs.api</groupId>
@@ -120,28 +118,6 @@
                 <version>${openMRSVersion}</version>
                 <type>pom</type>
                 <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.mockito</groupId>
-                        <artifactId>mockito-all</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hamcrest</groupId>
-                        <artifactId>hamcrest-all</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.powermock</groupId>
-                        <artifactId>powermock-module-junit4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.powermock</groupId>
-                        <artifactId>powermock-api-mockito</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.powermock</groupId>
-                        <artifactId>powermock-api-mockito2</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.openmrs.module</groupId>
@@ -158,26 +134,6 @@
                 <scope>test</scope>
             </dependency>
             <!-- End OpenMRS core -->
-
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${javaxServletVersion}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
-                <version>${mockitoInlineVersion}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>${byteBuddyVersion}</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -189,17 +145,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
         </dependency>
     </dependencies>
 
@@ -209,7 +157,16 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.15.0</version>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombokVersion}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.openmrs.maven.plugins</groupId>
@@ -247,9 +204,9 @@
                 <plugin>
                     <groupId>net.revelc.code</groupId>
                     <artifactId>impsort-maven-plugin</artifactId>
-                    <version>1.5.0</version>
+                    <version>1.13.0</version>
                     <configuration>
-                        <groups>javax, java, *</groups>
+                        <groups>jakarta, javax, java, *</groups>
                         <removeUnused>true</removeUnused>
                     </configuration>
                     <executions>

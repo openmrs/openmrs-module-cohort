@@ -33,7 +33,7 @@ import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
 @SuppressWarnings("unused")
 @Resource(name = RestConstants.VERSION_1 + CohortMainRestController.COHORT_NAMESPACE
-        + "/cohorttype", supportedClass = CohortType.class, supportedOpenmrsVersions = { "1.8 - 2.*" })
+        + "/cohorttype", supportedClass = CohortType.class, supportedOpenmrsVersions = { "1.8 - 9.*" })
 public class CohortTypeResource extends DataDelegatingCrudResource<CohortType> {
 	
 	@Override

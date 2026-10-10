@@ -9,7 +9,7 @@
  */
 package org.openmrs.module.cohort.web.resource;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
 
@@ -30,7 +30,7 @@ import org.openmrs.module.webservices.rest.web.v1_0.resource.openmrs1_9.BaseAttr
 @Slf4j
 @SuppressWarnings("unused")
 @SubResource(parent = CohortResource.class, path = "attribute", supportedClass = CohortAttribute.class, supportedOpenmrsVersions = {
-        "1.8 - 2.*" })
+        "1.8 - 9.*" })
 public class CohortAttributeResource extends BaseAttributeCrudResource1_9<CohortAttribute, CohortM, CohortResource> {
 	
 	private final CohortService cohortService;

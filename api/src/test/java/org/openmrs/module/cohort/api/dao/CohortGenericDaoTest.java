@@ -19,13 +19,13 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.api.CohortService;
 import org.openmrs.module.cohort.api.dao.search.PropValue;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -51,7 +51,7 @@ public class CohortGenericDaoTest extends BaseModuleContextSensitiveTest {
 	@Qualifier("cohortDao")
 	private GenericDao<CohortM> dao;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		for (String data : COHORT_INITIAL_TEST_DATA_XML) {
 			executeDataSet(data);
@@ -100,14 +100,13 @@ public class CohortGenericDaoTest extends BaseModuleContextSensitiveTest {
 	public void shouldCreateNewCohort() {
 		CohortM cohortM = new CohortM();
 		cohortM.setUuid("24c266ec-ef38-4af5-bf67-608d64a7a4cv");
-		cohortM.setCohortId(1);
 		cohortM.setName(COHORT_NAME1);
 		cohortM.setGroupCohort(false);
 		cohortM.setDescription(COHORT_DESCRIPTION);
 		
 		CohortM createdCohort = dao.createOrUpdate(cohortM);
 		assertThat(createdCohort, notNullValue());
-		assertThat(createdCohort.getCohortId(), equalTo(cohortM.getCohortId()));
+		assertThat(createdCohort.getCohortId(), notNullValue());
 		assertThat(createdCohort.getName(), is(cohortM.getName()));
 	}
 	

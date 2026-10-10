@@ -19,12 +19,12 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.module.cohort.CohortMemberAttribute;
 import org.openmrs.module.cohort.api.TestDataUtils;
 import org.openmrs.module.cohort.api.dao.search.PropValue;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -43,15 +43,13 @@ public class CohortMemberAttributeGenericDaoTest extends BaseModuleContextSensit
 	
 	private static final int COHORT_MEMBER_ATTRIBUTE_ID = 1;
 	
-	private static final int TEST_COHORT_MEMBER_ATTRIBUTE_ID = 100;
-	
 	private static final String COHORT_MEMBER_ATTRIBUTE_VALUE = "cohortMemberAttribute";
 	
 	@Autowired
 	@Qualifier("cohortMemberAttributeDao")
 	private GenericDao<CohortMemberAttribute> dao;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		for (String dataset : COHORT_MEMBER_ATTRIBUTE_INITIAL_TEST_DATA_XML) {
 			executeDataSet(dataset);
@@ -78,11 +76,16 @@ public class CohortMemberAttributeGenericDaoTest extends BaseModuleContextSensit
 	
 	@Test
 	public void shouldCreateNewCohortMemberAttribute() {
-		CohortMemberAttribute cohortAttribute = dao.createOrUpdate(TestDataUtils.COHORT_MEMBER_ATTRIBUTE());
+		CohortMemberAttribute existingAttribute = dao.get(COHORT_MEMBER_ATTRIBUTE_UUID);
+		CohortMemberAttribute cohortAttributeToCreate = TestDataUtils.COHORT_MEMBER_ATTRIBUTE();
+		cohortAttributeToCreate.setId(null);
+		cohortAttributeToCreate.setCohortMember(existingAttribute.getCohortMember());
+		cohortAttributeToCreate.setAttributeType(existingAttribute.getAttributeType());
+		cohortAttributeToCreate.setValueReferenceInternal(COHORT_MEMBER_ATTRIBUTE_VALUE);
+		CohortMemberAttribute cohortAttribute = dao.createOrUpdate(cohortAttributeToCreate);
 		
 		assertThat(cohortAttribute, notNullValue());
 		assertThat(cohortAttribute.getId(), notNullValue());
-		assertThat(cohortAttribute.getId(), equalTo(TEST_COHORT_MEMBER_ATTRIBUTE_ID));
 		assertThat(cohortAttribute.getValue(), equalTo(COHORT_MEMBER_ATTRIBUTE_VALUE));
 	}
 	

@@ -9,7 +9,7 @@
  */
 package org.openmrs.module.cohort.api.dao.search;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Collection;
 import java.util.List;

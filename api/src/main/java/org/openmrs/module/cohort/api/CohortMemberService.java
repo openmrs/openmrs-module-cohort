@@ -13,7 +13,7 @@ import static org.openmrs.module.cohort.api.CohortService.EDIT_COHORTS_PRIVILEGE
 import static org.openmrs.module.cohort.api.CohortService.MANAGE_COHORTS_PRIVILEGE;
 import static org.openmrs.module.cohort.api.CohortService.VIEW_COHORTS_PRIVILEGE;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Collection;
 

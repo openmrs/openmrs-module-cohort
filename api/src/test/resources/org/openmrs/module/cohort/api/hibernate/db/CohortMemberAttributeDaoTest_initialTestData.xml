@@ -9,6 +9,6 @@
     graphic logo is a trademark of OpenMRS Inc.
 -->
 <dataset>
-    <cohort_member_attribute cohort_member_attribute_id="1" attribute_type_id="1" value_reference="Test cohort attribute" creator="1"
+    <cohort_member_attribute cohort_member_attribute_id="1" cohort_member_attribute_type_id="1" value_reference="Test cohort attribute" creator="1"
                       cohort_member_id="1" date_created="2021-06-07 00:00:00.0" voided="false" uuid="ddadadd8-8034-4a28-9441-2eb2e7679e10"/>
 </dataset>

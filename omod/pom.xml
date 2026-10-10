@@ -111,6 +111,14 @@
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
             </testResource>
+            <!-- maps the module's hbm files into the test session factory; CohortM/CohortMember.attributes need them -->
+            <testResource>
+                <directory>../api/src/test/resources</directory>
+                <includes>
+                    <include>TestingApplicationContext.xml</include>
+                    <include>test-hibernate.cfg.xml</include>
+                </includes>
+            </testResource>
         </testResources>
         <pluginManagement>
             <plugins>

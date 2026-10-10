@@ -9,24 +9,27 @@
  */
 package org.openmrs.module.cohort.api.dao;
 
-import static org.hibernate.criterion.Restrictions.and;
-import static org.hibernate.criterion.Restrictions.eq;
-import static org.hibernate.criterion.Restrictions.or;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.function.BiFunction;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Criterion;
 import org.openmrs.Auditable;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Retireable;
 import org.openmrs.Voidable;
+import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.cohort.api.dao.search.PropValue;
 import org.openmrs.module.cohort.api.dao.search.SearchQueryHandler;
 
@@ -65,9 +68,14 @@ public abstract class AbstractGenericDao<W extends OpenmrsObject & Auditable> im
 	
 	@Override
 	public W get(String uuid, boolean includeVoided) {
-		Criteria criteria = getCurrentSession().createCriteria(clazz);
-		includeDeletedObjects(criteria, includeVoided);
-		return (W) criteria.add(eq("uuid", uuid)).uniqueResult();
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<W> cq = cb.createQuery(clazz);
+		Root<W> root = cq.from(clazz);
+		List<Predicate> predicates = new ArrayList<>();
+		includeDeletedObjects(cb, root, predicates, includeVoided);
+		predicates.add(cb.equal(root.get("uuid"), uuid));
+		cq.where(predicates.toArray(new Predicate[0]));
+		return getCurrentSession().createQuery(cq).uniqueResult();
 	}
 	
 	@Override
@@ -77,20 +85,24 @@ public abstract class AbstractGenericDao<W extends OpenmrsObject & Auditable> im
 	
 	@Override
 	public Collection<W> findAll(boolean includeRetired) {
-		Criteria criteria = getCurrentSession().createCriteria(clazz);
-		includeDeletedObjects(criteria, includeRetired);
-		return criteria.list();
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<W> cq = cb.createQuery(clazz);
+		Root<W> root = cq.from(clazz);
+		List<Predicate> predicates = new ArrayList<>();
+		includeDeletedObjects(cb, root, predicates, includeRetired);
+		cq.where(predicates.toArray(new Predicate[0]));
+		return getCurrentSession().createQuery(cq).getResultList();
 	}
 	
 	@Override
 	public W createOrUpdate(W entity) {
-		getCurrentSession().saveOrUpdate(entity);
-		return entity;
+		return HibernateUtil.saveOrUpdate(getCurrentSession(), entity);
 	}
 	
 	@Override
 	public void delete(W entity) {
-		getCurrentSession().delete(entity);
+		Session session = getCurrentSession();
+		session.remove(session.contains(entity) ? entity : session.merge(entity));
 	}
 	
 	@Override
@@ -111,12 +123,7 @@ public abstract class AbstractGenericDao<W extends OpenmrsObject & Auditable> im
 	
 	@Override
 	public Collection<W> findBy(PropValue propValue, boolean includeRetired) {
-		Criteria criteria = getCurrentSession().createCriteria(clazz);
-		includeDeletedObjects(criteria, includeRetired);
-		return propValue.getAssociationPath().isPresent()
-		        ? criteria.createCriteria(propValue.getAssociationPath().get(), "_pv2021")
-		                .add(eq("_pv2021." + propValue.getProperty(), propValue.getValue())).list()
-		        : criteria.add(eq(propValue.getProperty(), propValue.getValue())).list();
+		return getCurrentSession().createQuery(createPropValueQuery(propValue, includeRetired)).getResultList();
 	}
 	
 	@Override
@@ -126,24 +133,53 @@ public abstract class AbstractGenericDao<W extends OpenmrsObject & Auditable> im
 	
 	@Override
 	public W findByUniqueProp(PropValue propValue, boolean includeRetired) {
-		Criteria criteria = getCurrentSession().createCriteria(clazz);
-		includeDeletedObjects(criteria, includeRetired);
-		return (W) (propValue.getAssociationPath().isPresent()
-		        ? criteria.createCriteria(propValue.getAssociationPath().get(), "_cu2021")
-		                .add(eq("_cu2021." + propValue.getProperty(), propValue.getValue())).uniqueResult()
-		        : criteria.add(eq(propValue.getProperty(), propValue.getValue())).uniqueResult());
+		return getCurrentSession().createQuery(createPropValueQuery(propValue, includeRetired)).uniqueResult();
+	}
+	
+	/**
+	 * Builds a query matching {@code propValue}, inner joining its association path (if any) like the
+	 * former {@code Criteria.createCriteria(associationPath, alias)} did
+	 */
+	private CriteriaQuery<W> createPropValueQuery(PropValue propValue, boolean includeRetired) {
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<W> cq = cb.createQuery(clazz);
+		Root<W> root = cq.from(clazz);
+		List<Predicate> predicates = new ArrayList<>();
+		includeDeletedObjects(cb, root, predicates, includeRetired);
+		predicates
+		        .add(propValue.getAssociationPath().isPresent()
+		                ? cb.equal(root.join(propValue.getAssociationPath().get()).get(propValue.getProperty()),
+		                    propValue.getValue())
+		                : cb.equal(root.get(propValue.getProperty()), propValue.getValue()));
+		cq.where(predicates.toArray(new Predicate[0]));
+		return cq;
 	}
 	
 	@Override
-	public Collection<W> findByOr(Criterion... predicates) {
-		Criteria orByCriteria = getCurrentSession().createCriteria(clazz);
-		return orByCriteria.add(or(predicates)).list();
+	public Collection<W> findByOr(BiFunction<CriteriaBuilder, Root<W>, Predicate>... predicates) {
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<W> cq = cb.createQuery(clazz);
+		Root<W> root = cq.from(clazz);
+		cq.where(cb.or(toPredicates(cb, root, predicates)));
+		return getCurrentSession().createQuery(cq).getResultList();
 	}
 	
 	@Override
-	public Collection<W> findByAnd(Criterion... predicates) {
-		Criteria andByCriteria = getCurrentSession().createCriteria(clazz);
-		return andByCriteria.add(and(predicates)).list();
+	public Collection<W> findByAnd(BiFunction<CriteriaBuilder, Root<W>, Predicate>... predicates) {
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<W> cq = cb.createQuery(clazz);
+		Root<W> root = cq.from(clazz);
+		cq.where(cb.and(toPredicates(cb, root, predicates)));
+		return getCurrentSession().createQuery(cq).getResultList();
+	}
+	
+	private Predicate[] toPredicates(CriteriaBuilder cb, Root<W> root,
+	        BiFunction<CriteriaBuilder, Root<W>, Predicate>[] predicates) {
+		Predicate[] result = new Predicate[predicates.length];
+		for (int i = 0; i < predicates.length; i++) {
+			result[i] = predicates[i].apply(cb, root);
+		}
+		return result;
 	}
 	
 	protected boolean isVoidable() {
@@ -154,26 +190,22 @@ public abstract class AbstractGenericDao<W extends OpenmrsObject & Auditable> im
 		return Retireable.class.isAssignableFrom(clazz);
 	}
 	
-	protected void handleVoidable(Criteria criteria) {
-		criteria.add(eq("voided", false));
+	protected void handleVoidable(CriteriaBuilder cb, Root<W> root, List<Predicate> predicates) {
+		predicates.add(cb.equal(root.get("voided"), false));
 	}
 	
-	protected void handleRetireable(Criteria criteria) {
-		criteria.add(eq("retired", false));
+	protected void handleRetireable(CriteriaBuilder cb, Root<W> root, List<Predicate> predicates) {
+		predicates.add(cb.equal(root.get("retired"), false));
 	}
 	
-	protected void includeDeletedObjects(Criteria criteria, boolean includeDeleted) {
+	protected void includeDeletedObjects(CriteriaBuilder cb, Root<W> root, List<Predicate> predicates,
+	        boolean includeDeleted) {
 		if (!includeDeleted) {
 			if (isVoidable()) {
-				handleVoidable(criteria);
+				handleVoidable(cb, root, predicates);
 			} else if (isRetireable()) {
-				handleRetireable(criteria);
+				handleRetireable(cb, root, predicates);
 			}
 		}
-	}
-	
-	@Override
-	public Criteria createCriteria() {
-		return getCurrentSession().createCriteria(clazz);
 	}
 }

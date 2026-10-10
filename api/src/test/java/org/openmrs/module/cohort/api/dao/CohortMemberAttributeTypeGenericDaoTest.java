@@ -20,11 +20,11 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.module.cohort.CohortMemberAttributeType;
 import org.openmrs.module.cohort.api.TestDataUtils;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -34,15 +34,13 @@ public class CohortMemberAttributeTypeGenericDaoTest extends BaseModuleContextSe
 	
 	private static final String COHORT_MEMBER_ATTRIBUTE_TYPE_NAME = "cohort member attributeType Name";
 	
-	private static final Integer COHORT_MEMBER_ATTRIBUTE_TYPE_ID = 103;
-	
 	private final String COHORT_MEMBER_ATTRIBUTE_TYPE_UUID = "9eb7fe43-2813-4ebc-80dc-2e5d30251bb7";
 	
 	@Autowired
 	@Qualifier("cohortMemberAttributeTypeDao")
 	private GenericDao<CohortMemberAttributeType> dao;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		executeDataSet(COHORT_MEMBER_ATTRIBUTE_TYPE_INITIAL_TEST_DATA_XML);
 	}
@@ -66,11 +64,11 @@ public class CohortMemberAttributeTypeGenericDaoTest extends BaseModuleContextSe
 	
 	@Test
 	public void shouldCreateNewCohortMemberAttributeType() {
-		CohortMemberAttributeType cohortMemberAttributeType = dao
-		        .createOrUpdate(TestDataUtils.COHORT_MEMBER_ATTRIBUTE_TYPE());
+		CohortMemberAttributeType cohortMemberAttributeTypeToCreate = TestDataUtils.COHORT_MEMBER_ATTRIBUTE_TYPE();
+		cohortMemberAttributeTypeToCreate.setId(null);
+		CohortMemberAttributeType cohortMemberAttributeType = dao.createOrUpdate(cohortMemberAttributeTypeToCreate);
 		assertThat(cohortMemberAttributeType, notNullValue());
 		assertThat(cohortMemberAttributeType.getId(), notNullValue());
-		assertThat(cohortMemberAttributeType.getId(), equalTo(COHORT_MEMBER_ATTRIBUTE_TYPE_ID));
 		assertThat(cohortMemberAttributeType.getName(), equalTo(COHORT_MEMBER_ATTRIBUTE_TYPE_NAME));
 	}
 	

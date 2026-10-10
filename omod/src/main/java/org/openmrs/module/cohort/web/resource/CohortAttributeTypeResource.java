@@ -24,7 +24,7 @@ import org.openmrs.module.webservices.rest.web.v1_0.resource.openmrs1_9.BaseAttr
 
 @SuppressWarnings("unused")
 @Resource(name = RestConstants.VERSION_1 + CohortMainRestController.COHORT_NAMESPACE
-        + "/cohortattributetype", supportedClass = CohortAttributeType.class, supportedOpenmrsVersions = { "1.9 - 2.*" })
+        + "/cohortattributetype", supportedClass = CohortAttributeType.class, supportedOpenmrsVersions = { "1.9 - 9.*" })
 public class CohortAttributeTypeResource extends BaseAttributeTypeCrudResource1_9<CohortAttributeType> {
 	
 	@Override

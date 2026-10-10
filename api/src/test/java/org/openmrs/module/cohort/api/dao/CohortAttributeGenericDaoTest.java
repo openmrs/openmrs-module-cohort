@@ -19,12 +19,12 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.module.cohort.CohortAttribute;
 import org.openmrs.module.cohort.api.TestDataUtils;
 import org.openmrs.module.cohort.api.dao.search.PropValue;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -42,15 +42,13 @@ public class CohortAttributeGenericDaoTest extends BaseModuleContextSensitiveTes
 	
 	private static final String UN_VOIDED_COHORT_ATTRIBUTE = "System generated patient";
 	
-	private static final int TEST_COHORT_ATTRIBUTE_ID = 200;
-	
 	private static final String COHORT_ATTRIBUTE_VALUE = "cohortAttribute";
 	
 	@Autowired
 	@Qualifier("cohortAttributeDao")
 	private GenericDao<CohortAttribute> dao;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		executeDataSet(COHORT_ATTRIBUTE_INITIAL_TEST_DATA_XML);
 	}
@@ -71,10 +69,15 @@ public class CohortAttributeGenericDaoTest extends BaseModuleContextSensitiveTes
 	
 	@Test
 	public void shouldCreateNewCohortAttribute() {
-		CohortAttribute cohortAttribute = dao.createOrUpdate(TestDataUtils.COHORT_ATTRIBUTE());
+		CohortAttribute existingAttribute = dao.get(COHORT_ATTRIBUTE_UUID);
+		CohortAttribute cohortAttributeToCreate = TestDataUtils.COHORT_ATTRIBUTE();
+		cohortAttributeToCreate.setId(null);
+		cohortAttributeToCreate.setCohort(existingAttribute.getCohort());
+		cohortAttributeToCreate.setAttributeType(existingAttribute.getAttributeType());
+		cohortAttributeToCreate.setValueReferenceInternal(COHORT_ATTRIBUTE_VALUE);
+		CohortAttribute cohortAttribute = dao.createOrUpdate(cohortAttributeToCreate);
 		assertThat(cohortAttribute, notNullValue());
 		assertThat(cohortAttribute.getCohortAttributeId(), notNullValue());
-		assertThat(cohortAttribute.getCohortAttributeId(), equalTo(TEST_COHORT_ATTRIBUTE_ID));
 		assertThat(cohortAttribute.getValue(), equalTo(COHORT_ATTRIBUTE_VALUE));
 	}
 	

@@ -9,17 +9,19 @@
  */
 package org.openmrs.module.cohort.api.dao.search;
 
-import static org.hibernate.criterion.Restrictions.eq;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Disjunction;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Restrictions;
+import org.openmrs.module.cohort.CohortAttributeType;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.CohortType;
@@ -31,50 +33,58 @@ public class SearchQueryHandler extends AbstractSearchHandler implements ISearch
 	
 	public List<CohortM> findCohorts(String nameMatching, Map<String, String> attributes, CohortType cohortType,
 	        boolean includeVoided) {
-		Criteria criteria = getCurrentSession().createCriteria(CohortM.class);
-		criteria.add(eq("voided", includeVoided));
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<CohortM> cq = cb.createQuery(CohortM.class);
+		Root<CohortM> root = cq.from(CohortM.class);
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(root.get("voided"), includeVoided));
 		
 		if (StringUtils.isNotBlank(nameMatching)) {
-			criteria.add(Restrictions.ilike("name", nameMatching, MatchMode.ANYWHERE));
+			predicates.add(cb.like(cb.lower(root.get("name")), "%" + nameMatching.toLowerCase() + "%"));
 		}
 		
 		if (attributes != null && !attributes.isEmpty()) {
-			Criteria attributeCriteria = criteria.createCriteria("attributes").add(Restrictions.eq("voided", false))
-			        .createAlias("attributeType", "attrType");
+			Join<CohortM, ?> attribute = root.join("attributes");
+			// "attributeType" resolves to the AttributeType interface through the generic BaseCustomizableData mapping,
+			// so join the concrete entity explicitly to reach its name
+			Root<CohortAttributeType> attrType = cq.from(CohortAttributeType.class);
+			predicates.add(cb.equal(attribute.get("attributeType"), attrType));
+			predicates.add(cb.equal(attribute.get("voided"), false));
 			
-			Disjunction disjunction = Restrictions.disjunction();
-			for (String attribute : attributes.keySet()) {
-				disjunction.add(Restrictions.conjunction(Restrictions.eq("attrType.name", attribute),
-				    Restrictions.like("value", attributes.get(attribute), MatchMode.ANYWHERE)));
+			List<Predicate> disjunction = new ArrayList<>();
+			for (String attributeName : attributes.keySet()) {
+				disjunction.add(cb.and(cb.equal(attrType.get("name"), attributeName),
+				    cb.like(attribute.get("valueReference"), "%" + attributes.get(attributeName) + "%")));
 			}
 			
-			attributeCriteria.add(disjunction);
+			predicates.add(cb.or(disjunction.toArray(new Predicate[0])));
 		}
 		
 		if (cohortType != null) {
-			criteria.add(Restrictions.eq("cohortType.cohortTypeId", cohortType.getCohortTypeId()));
+			predicates.add(cb.equal(root.get("cohortType").get("cohortTypeId"), cohortType.getCohortTypeId()));
 		}
 		
-		criteria.setProjection(null).setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+		cq.select(root).distinct(true).where(predicates.toArray(new Predicate[0]));
 		
-		return criteria.list();
+		return getCurrentSession().createQuery(cq).getResultList();
 	}
 	
 	@Override
 	public Collection<CohortMember> findCohortMembersByPatientNames(String name) {
-		String patientAlias = "_p";
-		Criteria criteria = getCurrentSession().createCriteria(CohortMember.class).createCriteria("patient", patientAlias);
-		return handleNames(criteria, patientAlias, name).list();
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<CohortMember> cq = cb.createQuery(CohortMember.class);
+		Root<CohortMember> root = cq.from(CohortMember.class);
+		cq.where(handleNames(cb, root.join("patient"), name));
+		return getCurrentSession().createQuery(cq).getResultList();
 	}
 	
 	@Override
 	public Collection<CohortMember> findCohortMembersByCohortAndPatient(String cohortUuid, String query) {
-		String patientAlias = "_p21";
-		Criteria criteria = getCurrentSession().createCriteria(CohortMember.class);
-		criteria.createCriteria("cohort", "c").add(Restrictions.eq("c.uuid", cohortUuid));
-		Criteria patientCriteria = criteria.createCriteria("patient", patientAlias);
-		handleNames(patientCriteria, patientAlias, query);
+		CriteriaBuilder cb = getCurrentSession().getCriteriaBuilder();
+		CriteriaQuery<CohortMember> cq = cb.createQuery(CohortMember.class);
+		Root<CohortMember> root = cq.from(CohortMember.class);
+		cq.where(cb.equal(root.join("cohort").get("uuid"), cohortUuid), handleNames(cb, root.join("patient"), query));
 		
-		return criteria.list();
+		return getCurrentSession().createQuery(cq).getResultList();
 	}
 }

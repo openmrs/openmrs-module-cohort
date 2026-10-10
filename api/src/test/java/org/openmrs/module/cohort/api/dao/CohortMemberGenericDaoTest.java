@@ -7,10 +7,10 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openmrs.module.cohort.CohortMember;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
+import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -37,7 +37,7 @@ public class CohortMemberGenericDaoTest extends BaseModuleContextSensitiveTest {
 	@Qualifier("cohortMemberDao")
 	private GenericDao<CohortMember> dao;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		for (String data : COHORT_MEMBER_INITIAL_TEST_DATA_XML) {
 			executeDataSet(data);
@@ -57,7 +57,8 @@ public class CohortMemberGenericDaoTest extends BaseModuleContextSensitiveTest {
 		Collection<CohortMember> cohortMembers = dao.getSearchHandler().findCohortMembersByPatientNames(GIVEN_NAME);
 		
 		assertThat(cohortMembers, notNullValue());
-		assertThat(cohortMembers, hasSize(2));
+		// the single cohort member's patient has two names starting with "John"; Hibernate 6+ de-duplicates root entities
+		assertThat(cohortMembers, hasSize(1));
 		
 		for (CohortMember member : cohortMembers) {
 			assertThat(member.getPatient().getGivenName(), is(GIVEN_NAME));
