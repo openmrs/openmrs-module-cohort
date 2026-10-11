@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.openmrs.Patient;
+import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
-import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.definition.ManualCohortDefinitionHandler;
 import org.springframework.stereotype.Component;
 
@@ -54,10 +54,17 @@ public class DefaultCohortDefinitionHandler implements ManualCohortDefinitionHan
 			return;
 		}
 		
+		// voided in memory, as addMembers adds, so the removal is saved with the rest of the cohort rather than committed
+		// on its own before the cohort has been validated
+		final Date now = new Date();
+		User authenticatedUser = Context.getAuthenticatedUser();
 		Set<Patient> activePatients = getActivePatients(cohort);
 		Arrays.stream(cohortMembers).filter(Objects::nonNull).filter(cm -> activePatients.contains(cm.getPatient()))
 		        .forEach(cm -> {
-			        Context.getService(CohortMemberService.class).voidCohortMember(cm, "Cohort member removed");
+			        cm.setVoided(true);
+			        cm.setVoidReason("Cohort member removed");
+			        cm.setVoidedBy(authenticatedUser);
+			        cm.setDateVoided(now);
 			        
 			        cohort.getActiveCohortMembers().remove(cm);
 		        });

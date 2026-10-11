@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -84,11 +85,11 @@ public class CohortServiceImpl extends BaseOpenmrsService implements CohortServi
 	@Override
 	public CohortM saveCohortM(@NotNull CohortM cohortM) {
 		CustomDatatypeUtil.saveAttributesIfNecessary(cohortM);
-		if (Hibernate.isInitialized(cohortM.getCohortMembers())) {
-			// members added through the cohort are inserted by cascade, so their attribute values are serialized here too
-			cohortM.getCohortMembers().stream().filter(member -> member.getId() == null)
-			        .forEach(CustomDatatypeUtil::saveAttributesIfNecessary);
-		}
+		// members changed through the cohort are saved by cascade, so the attribute values they were given are serialized
+		// here too; a member whose attributes were never loaded has none to serialize
+		Stream.of(cohortM.getCohortMembers(), cohortM.getActiveCohortMembers()).filter(Hibernate::isInitialized)
+		        .flatMap(Collection::stream).filter(member -> Hibernate.isInitialized(member.getAttributes()))
+		        .forEach(CustomDatatypeUtil::saveAttributesIfNecessary);
 		return cohortDao.createOrUpdate(cohortM);
 	}
 	
