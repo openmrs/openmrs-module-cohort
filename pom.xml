@@ -309,6 +309,29 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <!-- Load the Byte Buddy agent when the test JVM starts, so Mockito's inline mock maker does not
+                 have to self-attach. Self-attach fails under surefire 3.6.0 (Maven 3.10's default). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>byte-buddy-agent-path</id>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${net.bytebuddy:byte-buddy-agent:jar}</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <distributionManagement>

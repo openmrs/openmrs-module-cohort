@@ -23,10 +23,21 @@ import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
+import org.openmrs.module.webservices.rest.web.RestUtil;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
 import org.springframework.context.annotation.Description;
 
 public class CohortMemberResourceControllerTest extends MainResourceControllerTest {
+	
+	/**
+	 * The resource tests mock RestUtil statically. If RestConstants is first loaded inside one of them,
+	 * its static initializer calls the mocked RestUtil.setUriPrefix() and URI_PREFIX stays null for the
+	 * rest of the JVM, so recompute it here, where the context is real.
+	 */
+	@BeforeEach
+	public void resetUriPrefix() {
+		RestUtil.setUriPrefix();
+	}
 	
 	private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 	
