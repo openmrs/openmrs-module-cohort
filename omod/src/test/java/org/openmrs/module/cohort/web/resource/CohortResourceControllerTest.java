@@ -6,14 +6,26 @@ import static org.junit.Assert.assertNull;
 
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.api.CohortService;
+import org.openmrs.module.webservices.rest.web.RestUtil;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
 
 public class CohortResourceControllerTest extends MainResourceControllerTest {
+	
+	/**
+	 * The resource tests mock RestUtil statically. If RestConstants is first loaded inside one of them,
+	 * its static initializer calls the mocked RestUtil.setUriPrefix() and URI_PREFIX stays null for the
+	 * rest of the JVM, so recompute it here, where the context is real.
+	 */
+	@BeforeEach
+	public void resetUriPrefix() {
+		RestUtil.setUriPrefix();
+	}
 	
 	@Override
 	public long getAllCount() {
