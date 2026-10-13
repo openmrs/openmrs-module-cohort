@@ -139,6 +139,28 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldSaveTheAttributesOfAMemberWhoHasNotStartedYetUpdatedThroughItsCohort() throws Exception {
+		CohortMemberAttributeType role = new CohortMemberAttributeType();
+		role.setName("Role");
+		role.setDatatypeClassname(FreeTextDatatype.class.getName());
+		Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember active = saveMember(cohort, 7);
+		CohortMember upcoming = newMember(cohort, 8);
+		upcoming.setStartDate(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000));
+		Context.getService(CohortMemberService.class).saveCohortMember(upcoming);
+		
+		sendAsARequest(newPostRequest(getURI() + "/" + cohort.getUuid(),
+		    "{ \"cohortMembers\": [ { \"uuid\": \"" + active.getUuid() + "\" }, { \"uuid\": \"" + upcoming.getUuid()
+		            + "\", \"attributes\": [ { \"attributeType\": \"" + role.getUuid()
+		            + "\", \"value\": \"treasurer\" } ] } ] }"));
+		
+		// the member hasn't started, so it is in the cohort's full set of members but not in its active ones
+		assertEquals("[treasurer]", valuesOf(memberOf(cohort, upcoming).getActiveAttributes()));
+	}
+	
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldChangeNothingWhenAnUpdateThatReplacesTheMembersFailsValidation() throws Exception {
 		saveCohort("taken name");
 		CohortM cohort = saveCohort("cohort name");
