@@ -83,6 +83,35 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	
 	@Test
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void shouldVoidTheAttributesOfAMemberRemovedThroughItsCohort() throws Exception {
+		CohortMemberAttributeType role = new CohortMemberAttributeType();
+		role.setName("Role");
+		role.setDatatypeClassname(FreeTextDatatype.class.getName());
+		Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember kept = saveMember(cohort, 7);
+		CohortMember secretary = newMember(cohort, 8);
+		CohortMemberAttribute attribute = new CohortMemberAttribute();
+		attribute.setAttributeType(role);
+		attribute.setValue("secretary");
+		secretary.addAttribute(attribute);
+		Context.getService(CohortMemberService.class).saveCohortMember(secretary);
+		
+		sendAsARequest(newPostRequest(getURI() + "/" + cohort.getUuid(),
+		    "{ \"cohortMembers\": [ { \"uuid\": \"" + kept.getUuid() + "\" } ] }"));
+		
+		// voided with the member, as voidCohortMember does, so a removed member has no active attributes
+		CohortMember removed = memberOf(cohort, secretary);
+		assertTrue(removed.getVoided());
+		assertEquals("[]", valuesOf(removed.getActiveAttributes()));
+		CohortMemberAttribute voided = removed.getAttributes().iterator().next();
+		assertEquals("Cohort member removed", voided.getVoidReason());
+		assertEquals(removed.getVoidedBy(), voided.getVoidedBy());
+		assertEquals(removed.getDateVoided().getTime(), voided.getDateVoided().getTime());
+	}
+	
+	@Test
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldReplaceTheAttributesOfAnExistingMemberUpdatedThroughItsCohort() throws Exception {
 		CohortMemberAttributeType role = new CohortMemberAttributeType();
 		role.setName("Role");
