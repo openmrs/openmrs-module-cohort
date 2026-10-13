@@ -118,6 +118,20 @@ public class CohortResourceCommitTest extends RestControllerTestUtils {
 	}
 	
 	@Test
+	public void shouldKeepAnAttributeSentBackForAMemberUpdatedThroughItsCohort() throws Exception {
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember secretary = saveMemberWithRole(cohort, 7, saveRoleType(), "secretary");
+		String attributeUuid = secretary.getAttributes().iterator().next().getUuid();
+		
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(), "{ \"cohortMembers\": [ { \"uuid\": \""
+		        + secretary.getUuid() + "\", \"attributes\": [ { \"uuid\": \"" + attributeUuid + "\" } ] } ] }"));
+		
+		CohortMember updated = memberOf(cohort, secretary);
+		assertEquals("[secretary]", valuesOf(updated.getActiveAttributes()));
+		assertEquals("[secretary]", valuesOf(updated.getAttributes()));
+	}
+	
+	@Test
 	public void shouldSaveTheAttributesOfAMemberWhoHasNotStartedYetUpdatedThroughItsCohort() throws Exception {
 		CohortMemberAttributeType role = saveRoleType();
 		CohortM cohort = saveCohort("cohort name");
