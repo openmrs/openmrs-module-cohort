@@ -23,7 +23,7 @@ import org.openmrs.module.cohort.CohortMemberAttribute;
 import org.openmrs.module.cohort.CohortMemberAttributeType;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
-import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
+import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.RestControllerTestUtils;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,22 +34,10 @@ import org.springframework.transaction.annotation.Transactional;
  * usual test transaction nothing commits, so these requests fail or pass there for other reasons.
  * The data a test commits is deleted after it.
  */
-public class CohortResourceCommitTest extends MainResourceControllerTest {
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+public class CohortResourceCommitTest extends RestControllerTestUtils {
 	
-	@Override
-	public long getAllCount() {
-		return 0;
-	}
-	
-	@Override
-	public String getURI() {
-		return "cohortm/cohort";
-	}
-	
-	@Override
-	public String getUuid() {
-		return null;
-	}
+	private static final String COHORT_URI = "cohortm/cohort";
 	
 	@AfterEach
 	public void deleteCommittedData() {
@@ -57,7 +45,6 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	}
 	
 	@Test
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveTheAttributesOfACohortWhoseUpdateAlsoRemovesAMember() throws Exception {
 		CohortAttributeType facility = new CohortAttributeType();
 		facility.setName("Facility");
@@ -67,7 +54,7 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 		CohortMember kept = saveMember(cohort, 7);
 		CohortMember removed = saveMember(cohort, 8);
 		
-		sendAsARequest(newPostRequest(getURI() + "/" + cohort.getUuid(),
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
 		    "{ \"attributes\": [ { \"attributeType\": \"" + facility.getUuid() + "\", \"value\": \"Nairobi\" } ], "
 		            + "\"cohortMembers\": [ { \"uuid\": \"" + kept.getUuid() + "\" } ] }"));
 		
@@ -82,22 +69,12 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	}
 	
 	@Test
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldVoidTheAttributesOfAMemberRemovedThroughItsCohort() throws Exception {
-		CohortMemberAttributeType role = new CohortMemberAttributeType();
-		role.setName("Role");
-		role.setDatatypeClassname(FreeTextDatatype.class.getName());
-		Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
 		CohortM cohort = saveCohort("cohort name");
 		CohortMember kept = saveMember(cohort, 7);
-		CohortMember secretary = newMember(cohort, 8);
-		CohortMemberAttribute attribute = new CohortMemberAttribute();
-		attribute.setAttributeType(role);
-		attribute.setValue("secretary");
-		secretary.addAttribute(attribute);
-		Context.getService(CohortMemberService.class).saveCohortMember(secretary);
+		CohortMember secretary = saveMemberWithRole(cohort, 8, saveRoleType(), "secretary");
 		
-		sendAsARequest(newPostRequest(getURI() + "/" + cohort.getUuid(),
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
 		    "{ \"cohortMembers\": [ { \"uuid\": \"" + kept.getUuid() + "\" } ] }"));
 		
 		// voided with the member, as voidCohortMember does, so a removed member has no active attributes
@@ -111,22 +88,13 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	}
 	
 	@Test
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldReplaceTheAttributesOfAnExistingMemberUpdatedThroughItsCohort() throws Exception {
-		CohortMemberAttributeType role = new CohortMemberAttributeType();
-		role.setName("Role");
-		role.setDatatypeClassname(FreeTextDatatype.class.getName());
-		Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
+		CohortMemberAttributeType role = saveRoleType();
 		CohortM cohort = saveCohort("cohort name");
-		CohortMember secretary = newMember(cohort, 7);
-		CohortMemberAttribute attribute = new CohortMemberAttribute();
-		attribute.setAttributeType(role);
-		attribute.setValue("secretary");
-		secretary.addAttribute(attribute);
-		Context.getService(CohortMemberService.class).saveCohortMember(secretary);
+		CohortMember secretary = saveMemberWithRole(cohort, 7, role, "secretary");
 		CohortMember other = saveMember(cohort, 8);
 		
-		sendAsARequest(newPostRequest(getURI() + "/" + cohort.getUuid(),
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
 		    "{ \"name\": \"renamed\", \"cohortMembers\": [ { \"uuid\": \"" + secretary.getUuid() + "\", \"attributes\": [ { "
 		            + "\"attributeType\": \"" + role.getUuid() + "\", \"value\": \"treasurer\" } ] }, { \"uuid\": \""
 		            + other.getUuid() + "\" } ] }"));
@@ -138,19 +106,15 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	}
 	
 	@Test
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldSaveTheAttributesOfAMemberWhoHasNotStartedYetUpdatedThroughItsCohort() throws Exception {
-		CohortMemberAttributeType role = new CohortMemberAttributeType();
-		role.setName("Role");
-		role.setDatatypeClassname(FreeTextDatatype.class.getName());
-		Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
+		CohortMemberAttributeType role = saveRoleType();
 		CohortM cohort = saveCohort("cohort name");
 		CohortMember active = saveMember(cohort, 7);
 		CohortMember upcoming = newMember(cohort, 8);
 		upcoming.setStartDate(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000));
 		Context.getService(CohortMemberService.class).saveCohortMember(upcoming);
 		
-		sendAsARequest(newPostRequest(getURI() + "/" + cohort.getUuid(),
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
 		    "{ \"cohortMembers\": [ { \"uuid\": \"" + active.getUuid() + "\" }, { \"uuid\": \"" + upcoming.getUuid()
 		            + "\", \"attributes\": [ { \"attributeType\": \"" + role.getUuid()
 		            + "\", \"value\": \"treasurer\" } ] } ] }"));
@@ -160,14 +124,13 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	}
 	
 	@Test
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public void shouldChangeNothingWhenAnUpdateThatReplacesTheMembersFailsValidation() throws Exception {
 		saveCohort("taken name");
 		CohortM cohort = saveCohort("cohort name");
 		CohortMember first = saveMember(cohort, 7);
 		CohortMember second = saveMember(cohort, 8);
 		// the whole member list, given as patients, the way O3 fast data entry's Edit Group sends it
-		MockHttpServletRequest request = newPostRequest(getURI() + "/" + cohort.getUuid(),
+		MockHttpServletRequest request = newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
 		    "{ \"name\": \"taken name\", \"cohortMembers\": [ " + newMemberJson(7) + ", " + newMemberJson(8) + " ] }");
 		
 		assertThrows(ValidationException.class, () -> sendAsARequest(request));
@@ -219,6 +182,22 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 		return Context.getService(CohortMemberService.class).saveCohortMember(newMember(cohort, patientId));
 	}
 	
+	private CohortMember saveMemberWithRole(CohortM cohort, int patientId, CohortMemberAttributeType role, String value) {
+		CohortMember member = newMember(cohort, patientId);
+		CohortMemberAttribute attribute = new CohortMemberAttribute();
+		attribute.setAttributeType(role);
+		attribute.setValue(value);
+		member.addAttribute(attribute);
+		return Context.getService(CohortMemberService.class).saveCohortMember(member);
+	}
+	
+	private static CohortMemberAttributeType saveRoleType() {
+		CohortMemberAttributeType role = new CohortMemberAttributeType();
+		role.setName("Role");
+		role.setDatatypeClassname(FreeTextDatatype.class.getName());
+		return Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
+	}
+	
 	private static String newMemberJson(int patientId) {
 		return "{ \"patient\": \"" + Context.getPatientService().getPatient(patientId).getUuid()
 		        + "\", \"startDate\": \"2025-10-09T00:00:00.000+0000\" }";
@@ -226,25 +205,5 @@ public class CohortResourceCommitTest extends MainResourceControllerTest {
 	
 	private static String valuesOf(Collection<? extends Attribute<?, ?>> attributes) {
 		return attributes.stream().map(Attribute::getValueReference).sorted().collect(Collectors.toList()).toString();
-	}
-	
-	@Override
-	public void shouldGetDefaultByUuid() throws Exception {
-		
-	}
-	
-	@Override
-	public void shouldGetFullByUuid() throws Exception {
-		
-	}
-	
-	@Override
-	public void shouldGetRefByUuid() throws Exception {
-		
-	}
-	
-	@Override
-	public void shouldGetAll() throws Exception {
-		
 	}
 }

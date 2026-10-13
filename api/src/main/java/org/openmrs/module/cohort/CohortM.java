@@ -221,6 +221,17 @@ public class CohortM extends BaseCustomizableData<CohortAttribute> implements Au
 		}
 	}
 	
+	/**
+	 * Removes the given members through this cohort's definition handler. The change is made in memory
+	 * and saved with the cohort by
+	 * {@link org.openmrs.module.cohort.api.CohortService#saveCohortM(CohortM)}. The default handler
+	 * voids this cohort's own instance of each given member that is one of its active members, along
+	 * with that member's attributes, and ignores the rest.
+	 *
+	 * @param cohortMembers the members to remove
+	 * @throws ManualChangeNotSupportedException if the definition handler doesn't support manual
+	 *             changes
+	 */
 	public void removeMemberships(CohortMember... cohortMembers) {
 		CohortDefinitionHandler cohortDefinition = getDefinitionHandler();
 		if (cohortDefinition instanceof ManualCohortDefinitionHandler) {

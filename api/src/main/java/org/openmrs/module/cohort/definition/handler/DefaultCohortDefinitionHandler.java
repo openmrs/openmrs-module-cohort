@@ -62,7 +62,7 @@ public class DefaultCohortDefinitionHandler implements ManualCohortDefinitionHan
 		final Date now = new Date();
 		User authenticatedUser = Context.getAuthenticatedUser();
 		Set<CohortMember> toRemove = Arrays.stream(cohortMembers).filter(Objects::nonNull).collect(Collectors.toSet());
-		cohort.getActiveCohortMembers().stream().filter(toRemove::contains).collect(Collectors.toList()).forEach(cm -> {
+		cohort.getActiveCohortMembers().stream().filter(toRemove::contains).toList().forEach(cm -> {
 			voidAsRemoved(cm, authenticatedUser, now);
 			cm.getActiveAttributes().forEach(attribute -> voidAsRemoved(attribute, authenticatedUser, now));
 			
