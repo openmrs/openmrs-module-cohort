@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openmrs.api.ValidationException;
 import org.openmrs.api.context.Context;
@@ -23,6 +24,7 @@ import org.openmrs.module.cohort.CohortMemberAttribute;
 import org.openmrs.module.cohort.CohortMemberAttributeType;
 import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
+import org.openmrs.module.webservices.rest.web.RestUtil;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.RestControllerTestUtils;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.transaction.annotation.Propagation;
@@ -38,6 +40,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class CohortResourceCommitTest extends RestControllerTestUtils {
 	
 	private static final String COHORT_URI = "cohortm/cohort";
+	
+	/**
+	 * The resource tests mock RestUtil statically. If RestConstants is first loaded inside one of them,
+	 * its static initializer calls the mocked RestUtil.setUriPrefix() and URI_PREFIX stays null for the
+	 * rest of the JVM, so recompute it here, where the context is real.
+	 */
+	@BeforeEach
+	public void resetUriPrefix() {
+		RestUtil.setUriPrefix();
+	}
 	
 	@AfterEach
 	public void deleteCommittedData() {
