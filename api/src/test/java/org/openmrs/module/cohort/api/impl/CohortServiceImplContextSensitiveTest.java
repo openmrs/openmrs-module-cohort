@@ -24,6 +24,7 @@ import org.openmrs.module.cohort.CohortAttributeType;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
 import org.openmrs.module.cohort.CohortType;
+import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.api.CohortService;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
@@ -132,6 +133,32 @@ public class CohortServiceImplContextSensitiveTest extends BaseModuleContextSens
 		
 		assertThat(result, notNullValue());
 		assertThat(result.size(), equalTo(0));
+	}
+	
+	@Test
+	public void saveCohortM_shouldRemoveAMemberGivenAsACopyLoadedInAnotherSession() {
+		CohortM cohortM = new CohortM();
+		cohortM.setName("Test Cohort");
+		cohortM.setDescription("Test Cohort Description");
+		CohortMember cm = new CohortMember(Context.getPatientService().getPatient(7));
+		cm.setStartDate(new Date(System.currentTimeMillis() - 1000));
+		cohortM.addMemberships(cm);
+		Context.getService(CohortService.class).saveCohortM(cohortM);
+		Context.flushSession();
+		Context.clearSession();
+		CohortMember copy = Context.getService(CohortMemberService.class).getCohortMemberByUuid(cm.getUuid());
+		// detached, like a member loaded in another session
+		Context.clearSession();
+		CohortM existingCohort = Context.getService(CohortService.class).getCohortMByUuid(cohortM.getUuid());
+		
+		existingCohort.removeMemberships(copy);
+		Context.getService(CohortService.class).saveCohortM(existingCohort);
+		Context.flushSession();
+		Context.clearSession();
+		
+		CohortM result = Context.getService(CohortService.class).getCohortMByUuid(cohortM.getUuid());
+		assertThat(result.size(), equalTo(0));
+		assertThat(result.getCohortMembers().iterator().next().getVoided(), equalTo(true));
 	}
 	
 	@Test

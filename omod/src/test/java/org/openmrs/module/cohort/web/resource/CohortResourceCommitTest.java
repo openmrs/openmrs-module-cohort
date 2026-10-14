@@ -1,0 +1,244 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+ * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+ * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+ *
+ * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+ * graphic logo is a trademark of OpenMRS Inc.
+ */
+package org.openmrs.module.cohort.web.resource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.stream.Collectors;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.openmrs.api.ValidationException;
+import org.openmrs.api.context.Context;
+import org.openmrs.attribute.Attribute;
+import org.openmrs.customdatatype.datatype.FreeTextDatatype;
+import org.openmrs.module.cohort.CohortAttributeType;
+import org.openmrs.module.cohort.CohortM;
+import org.openmrs.module.cohort.CohortMember;
+import org.openmrs.module.cohort.CohortMemberAttribute;
+import org.openmrs.module.cohort.CohortMemberAttributeType;
+import org.openmrs.module.cohort.api.CohortMemberService;
+import org.openmrs.module.cohort.api.CohortService;
+import org.openmrs.module.webservices.rest.web.RestUtil;
+import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.RestControllerTestUtils;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Cohort updates sent the way a server runs them: outside a test transaction, so each service call
+ * commits on its own, and in a fresh session that only flushes when one of them commits. Inside the
+ * usual test transaction nothing commits, so these requests fail or pass there for other reasons.
+ * The data a test commits is deleted after it.
+ */
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+public class CohortResourceCommitTest extends RestControllerTestUtils {
+	
+	private static final String COHORT_URI = "cohortm/cohort";
+	
+	/**
+	 * The resource tests mock RestUtil statically. If RestConstants is first loaded inside one of them,
+	 * its static initializer calls the mocked RestUtil.setUriPrefix() and URI_PREFIX stays null for the
+	 * rest of the JVM, so recompute it here, where the context is real.
+	 */
+	@BeforeEach
+	public void resetUriPrefix() {
+		RestUtil.setUriPrefix();
+	}
+	
+	@AfterEach
+	public void deleteCommittedData() {
+		deleteAllData();
+	}
+	
+	@Test
+	public void shouldSaveTheAttributesOfACohortWhoseUpdateAlsoRemovesAMember() throws Exception {
+		CohortAttributeType facility = new CohortAttributeType();
+		facility.setName("Facility");
+		facility.setDatatypeClassname(FreeTextDatatype.class.getName());
+		Context.getService(CohortService.class).saveCohortAttributeType(facility);
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember kept = saveMember(cohort, 7);
+		CohortMember removed = saveMember(cohort, 8);
+		
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
+		    "{ \"attributes\": [ { \"attributeType\": \"" + facility.getUuid() + "\", \"value\": \"Nairobi\" } ], "
+		            + "\"cohortMembers\": [ { \"uuid\": \"" + kept.getUuid() + "\" } ] }"));
+		
+		assertEquals("[Nairobi]",
+		    valuesOf(Context.getService(CohortService.class).getCohortMByUuid(cohort.getUuid()).getActiveAttributes()));
+		assertFalse(memberOf(cohort, kept).getVoided());
+		CohortMember voided = memberOf(cohort, removed);
+		assertTrue(voided.getVoided());
+		assertEquals("Cohort member removed", voided.getVoidReason());
+		assertNotNull(voided.getVoidedBy());
+		assertNotNull(voided.getDateVoided());
+	}
+	
+	@Test
+	public void shouldVoidTheAttributesOfAMemberRemovedThroughItsCohort() throws Exception {
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember kept = saveMember(cohort, 7);
+		CohortMember secretary = saveMemberWithRole(cohort, 8, saveRoleType(), "secretary");
+		
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
+		    "{ \"cohortMembers\": [ { \"uuid\": \"" + kept.getUuid() + "\" } ] }"));
+		
+		// voided with the member, as voidCohortMember does, so a removed member has no active attributes
+		CohortMember removed = memberOf(cohort, secretary);
+		assertTrue(removed.getVoided());
+		assertEquals("[]", valuesOf(removed.getActiveAttributes()));
+		CohortMemberAttribute voided = removed.getAttributes().iterator().next();
+		assertEquals("Cohort member removed", voided.getVoidReason());
+		assertEquals(removed.getVoidedBy(), voided.getVoidedBy());
+		assertEquals(removed.getDateVoided().getTime(), voided.getDateVoided().getTime());
+	}
+	
+	@Test
+	public void shouldReplaceTheAttributesOfAnExistingMemberUpdatedThroughItsCohort() throws Exception {
+		CohortMemberAttributeType role = saveRoleType();
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember secretary = saveMemberWithRole(cohort, 7, role, "secretary");
+		CohortMember other = saveMember(cohort, 8);
+		
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
+		    "{ \"name\": \"renamed\", \"cohortMembers\": [ { \"uuid\": \"" + secretary.getUuid() + "\", \"attributes\": [ { "
+		            + "\"attributeType\": \"" + role.getUuid() + "\", \"value\": \"treasurer\" } ] }, { \"uuid\": \""
+		            + other.getUuid() + "\" } ] }"));
+		
+		assertEquals("renamed", Context.getService(CohortService.class).getCohortMByUuid(cohort.getUuid()).getName());
+		CohortMember updated = Context.getService(CohortMemberService.class).getCohortMemberByUuid(secretary.getUuid());
+		assertEquals("[treasurer]", valuesOf(updated.getActiveAttributes()));
+		assertEquals("[secretary, treasurer]", valuesOf(updated.getAttributes()));
+	}
+	
+	@Test
+	public void shouldKeepAnAttributeSentBackForAMemberUpdatedThroughItsCohort() throws Exception {
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember secretary = saveMemberWithRole(cohort, 7, saveRoleType(), "secretary");
+		String attributeUuid = secretary.getAttributes().iterator().next().getUuid();
+		
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(), "{ \"cohortMembers\": [ { \"uuid\": \""
+		        + secretary.getUuid() + "\", \"attributes\": [ { \"uuid\": \"" + attributeUuid + "\" } ] } ] }"));
+		
+		CohortMember updated = memberOf(cohort, secretary);
+		assertEquals("[secretary]", valuesOf(updated.getActiveAttributes()));
+		assertEquals("[secretary]", valuesOf(updated.getAttributes()));
+	}
+	
+	@Test
+	public void shouldSaveTheAttributesOfAMemberWhoHasNotStartedYetUpdatedThroughItsCohort() throws Exception {
+		CohortMemberAttributeType role = saveRoleType();
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember active = saveMember(cohort, 7);
+		CohortMember upcoming = newMember(cohort, 8);
+		upcoming.setStartDate(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000));
+		Context.getService(CohortMemberService.class).saveCohortMember(upcoming);
+		
+		sendAsARequest(newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
+		    "{ \"cohortMembers\": [ { \"uuid\": \"" + active.getUuid() + "\" }, { \"uuid\": \"" + upcoming.getUuid()
+		            + "\", \"attributes\": [ { \"attributeType\": \"" + role.getUuid()
+		            + "\", \"value\": \"treasurer\" } ] } ] }"));
+		
+		// the member hasn't started, so it is in the cohort's full set of members but not in its active ones
+		assertEquals("[treasurer]", valuesOf(memberOf(cohort, upcoming).getActiveAttributes()));
+	}
+	
+	@Test
+	public void shouldChangeNothingWhenAnUpdateThatReplacesTheMembersFailsValidation() throws Exception {
+		saveCohort("taken name");
+		CohortM cohort = saveCohort("cohort name");
+		CohortMember first = saveMember(cohort, 7);
+		CohortMember second = saveMember(cohort, 8);
+		// the whole member list, given as patients, the way O3 fast data entry's Edit Group sends it
+		MockHttpServletRequest request = newPostRequest(COHORT_URI + "/" + cohort.getUuid(),
+		    "{ \"name\": \"taken name\", \"cohortMembers\": [ " + newMemberJson(7) + ", " + newMemberJson(8) + " ] }");
+		
+		assertThrows(ValidationException.class, () -> sendAsARequest(request));
+		
+		assertEquals("cohort name", Context.getService(CohortService.class).getCohortMByUuid(cohort.getUuid()).getName());
+		assertFalse(memberOf(cohort, first).getVoided());
+		assertFalse(memberOf(cohort, second).getVoided());
+	}
+	
+	/** Finds the member among all of the cohort's members, voided ones included. */
+	private static CohortMember memberOf(CohortM cohort, CohortMember member) {
+		return Context.getService(CohortService.class).getCohortMByUuid(cohort.getUuid()).getCohortMembers().stream()
+		        .filter(m -> m.getUuid().equals(member.getUuid())).findFirst().orElseThrow(AssertionError::new);
+	}
+	
+	private void sendAsARequest(MockHttpServletRequest request) throws Exception {
+		openNewSession();
+		try {
+			handle(request);
+		}
+		finally {
+			openNewSession();
+		}
+	}
+	
+	private void openNewSession() {
+		while (Context.isSessionOpen()) {
+			Context.closeSession();
+		}
+		Context.openSession();
+		authenticate();
+	}
+	
+	private CohortM saveCohort(String name) {
+		CohortM cohort = new CohortM();
+		cohort.setName(name);
+		cohort.setDescription("cohort description");
+		return Context.getService(CohortService.class).saveCohortM(cohort);
+	}
+	
+	private CohortMember newMember(CohortM cohort, int patientId) {
+		CohortMember member = new CohortMember(Context.getPatientService().getPatient(patientId));
+		member.setCohort(cohort);
+		member.setStartDate(new Date(System.currentTimeMillis() - 1000));
+		return member;
+	}
+	
+	private CohortMember saveMember(CohortM cohort, int patientId) {
+		return Context.getService(CohortMemberService.class).saveCohortMember(newMember(cohort, patientId));
+	}
+	
+	private CohortMember saveMemberWithRole(CohortM cohort, int patientId, CohortMemberAttributeType role, String value) {
+		CohortMember member = newMember(cohort, patientId);
+		CohortMemberAttribute attribute = new CohortMemberAttribute();
+		attribute.setAttributeType(role);
+		attribute.setValue(value);
+		member.addAttribute(attribute);
+		return Context.getService(CohortMemberService.class).saveCohortMember(member);
+	}
+	
+	private static CohortMemberAttributeType saveRoleType() {
+		CohortMemberAttributeType role = new CohortMemberAttributeType();
+		role.setName("Role");
+		role.setDatatypeClassname(FreeTextDatatype.class.getName());
+		return Context.getService(CohortMemberService.class).saveCohortMemberAttributeType(role);
+	}
+	
+	private static String newMemberJson(int patientId) {
+		return "{ \"patient\": \"" + Context.getPatientService().getPatient(patientId).getUuid()
+		        + "\", \"startDate\": \"2025-10-09T00:00:00.000+0000\" }";
+	}
+	
+	private static String valuesOf(Collection<? extends Attribute<?, ?>> attributes) {
+		return attributes.stream().map(Attribute::getValueReference).sorted().collect(Collectors.toList()).toString();
+	}
+}

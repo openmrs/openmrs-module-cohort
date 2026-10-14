@@ -23,6 +23,7 @@ import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
+import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
@@ -181,10 +182,16 @@ public class CohortMemberResource extends DataDelegatingCrudResource<CohortMembe
 	
 	@PropertySetter("attributes")
 	public static void setAttributes(CohortMember cohortMember, Set<CohortMemberAttribute> attributes) {
-		for (CohortMemberAttribute attribute : attributes) {
-			attribute.setOwner(cohortMember);
-		}
-		cohortMember.setAttributes(attributes);
+		// a saved member's set can't be replaced (attributes are mapped with orphanRemoval), and a member nested in a
+		// cohort has its attributes set twice by ConversionUtil.convertMap, so drop what an earlier call added first
+		cohortMember.getAttributes().removeIf(attribute -> attribute.getId() == null);
+		User authenticatedUser = Context.getAuthenticatedUser();
+		cohortMember.getActiveAttributes().stream().filter(a -> !attributes.contains(a)).forEach(a -> {
+			a.setVoided(true);
+			a.setVoidReason("Attribute voided by API");
+			a.setVoidedBy(authenticatedUser);
+		});
+		attributes.forEach(cohortMember::addAttribute);
 	}
 	
 	@PropertyGetter("display")

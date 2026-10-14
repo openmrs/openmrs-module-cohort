@@ -17,10 +17,11 @@ import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.openmrs.Patient;
+import org.openmrs.User;
+import org.openmrs.Voidable;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
 import org.openmrs.module.cohort.CohortMember;
-import org.openmrs.module.cohort.api.CohortMemberService;
 import org.openmrs.module.cohort.definition.ManualCohortDefinitionHandler;
 import org.springframework.stereotype.Component;
 
@@ -54,13 +55,26 @@ public class DefaultCohortDefinitionHandler implements ManualCohortDefinitionHan
 			return;
 		}
 		
-		Set<Patient> activePatients = getActivePatients(cohort);
-		Arrays.stream(cohortMembers).filter(Objects::nonNull).filter(cm -> activePatients.contains(cm.getPatient()))
-		        .forEach(cm -> {
-			        Context.getService(CohortMemberService.class).voidCohortMember(cm, "Cohort member removed");
-			        
-			        cohort.getActiveCohortMembers().remove(cm);
-		        });
+		// voided in memory, as addMembers adds, so the removal is saved with the rest of the cohort rather than committed
+		// on its own before the cohort has been validated. The cohort's own instance is voided, since a copy of a
+		// member (one loaded in another session) isn't saved with the cohort. The member's attributes are voided with
+		// it, as voidCohortMember voids them.
+		final Date now = new Date();
+		User authenticatedUser = Context.getAuthenticatedUser();
+		Set<CohortMember> toRemove = Arrays.stream(cohortMembers).filter(Objects::nonNull).collect(Collectors.toSet());
+		cohort.getActiveCohortMembers().stream().filter(toRemove::contains).toList().forEach(cm -> {
+			voidAsRemoved(cm, authenticatedUser, now);
+			cm.getActiveAttributes().forEach(attribute -> voidAsRemoved(attribute, authenticatedUser, now));
+			
+			cohort.getActiveCohortMembers().remove(cm);
+		});
+	}
+	
+	private static void voidAsRemoved(Voidable voidable, User voidedBy, Date dateVoided) {
+		voidable.setVoided(true);
+		voidable.setVoidReason("Cohort member removed");
+		voidable.setVoidedBy(voidedBy);
+		voidable.setDateVoided(dateVoided);
 	}
 	
 	private Set<Patient> getActivePatients(CohortM cohort) {

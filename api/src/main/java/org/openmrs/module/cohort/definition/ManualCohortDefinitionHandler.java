@@ -21,5 +21,12 @@ public interface ManualCohortDefinitionHandler extends CohortDefinitionHandler {
 	
 	void addMembers(CohortM cohort, CohortMember... cohortMembers);
 	
+	/**
+	 * Removes the given members from the cohort. The change is made in memory and saved with the cohort
+	 * by {@link org.openmrs.module.cohort.api.CohortService#saveCohortM(CohortM)}.
+	 *
+	 * @param cohort the cohort to remove the members from
+	 * @param cohortMembers the members to remove
+	 */
 	void removeMembers(CohortM cohort, CohortMember... cohortMembers);
 }
