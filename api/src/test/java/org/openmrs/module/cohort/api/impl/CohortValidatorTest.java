@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import org.junit.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortM;
-import org.openmrs.module.cohort.CohortType;
 import org.openmrs.module.cohort.api.CohortService;
 import org.openmrs.module.cohort.validators.CohortMValidator;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
@@ -22,13 +21,11 @@ public class CohortValidatorTest extends BaseModuleContextSensitiveTest {
 	@Test
 	public void saveCohort_shouldFailValidationOnExistingName() {
 		CohortM cohort = new CohortM();
-		cohort.setCohortType(new CohortType());
 		cohort.setName("Test Cohort");
 		cohort.setDescription("Test Cohort Description");
 		Context.getService(CohortService.class).saveCohortM(cohort);
 		
 		CohortM invalidCohort = new CohortM();
-		invalidCohort.setCohortType(new CohortType());
 		invalidCohort.setName("Test Cohort");
 		Errors errors = new BeanPropertyBindingResult(invalidCohort, "invalidCohort");
 		validator.validate(invalidCohort, errors);
@@ -40,7 +37,6 @@ public class CohortValidatorTest extends BaseModuleContextSensitiveTest {
 	public void saveCohort_shouldPassValidationOnUpdatingWhileKeepingName() {
 		CohortM cohort = new CohortM();
 		cohort.setName("Test Cohort");
-		cohort.setCohortType(new CohortType());
 		cohort.setDescription("Test Cohort Description");
 		Context.getService(CohortService.class).saveCohortM(cohort);
 		cohort.setDescription("Updated Cohort description");

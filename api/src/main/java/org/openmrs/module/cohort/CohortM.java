@@ -63,7 +63,7 @@ public class CohortM extends BaseCustomizableData<CohortAttribute> implements Au
 	
 	private String description;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name = "location_id")
 	private Location location;
 	
@@ -71,7 +71,7 @@ public class CohortM extends BaseCustomizableData<CohortAttribute> implements Au
 	
 	private Date endDate;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name = "cohort_type_id")
 	private CohortType cohortType;
 	

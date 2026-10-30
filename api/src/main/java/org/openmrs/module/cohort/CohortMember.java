@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.cohort;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -42,11 +41,11 @@ public class CohortMember extends BaseCustomizableData<CohortMemberAttribute> {
 	@Column(name = "cohort_member_id")
 	private Integer cohortMemberId;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name = "patient_id", nullable = false)
 	private Patient patient;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name = "cohort_id")
 	private CohortM cohort;
 	

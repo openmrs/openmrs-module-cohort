@@ -4,12 +4,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.cohort.CohortMember;
+import org.openmrs.module.cohort.api.CohortService;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -100,5 +103,16 @@ public class CohortMemberGenericDaoTest extends BaseModuleContextSensitiveTest {
 		for (CohortMember member : cohortMembers) {
 			assertThat(member.getPatient().getFamilyName(), is(FAMILY_NAME));
 		}
+	}
+	
+	@Test
+	public void shouldPurgeCohortMemberWithoutPurgingItsCohortOrPatient() {
+		dao.delete(dao.get(COHORT_MEMBER_UUID));
+		Context.flushSession();
+		Context.clearSession();
+		
+		assertThat(dao.get(COHORT_MEMBER_UUID), nullValue());
+		assertThat(Context.getService(CohortService.class).getCohortMByUuid(COHORT_UUID), notNullValue());
+		assertThat(Context.getPatientService().getPatient(2), notNullValue());
 	}
 }
